@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transparent AI Decisions — NZ Jobseeker Support</title>
+  <meta name="description" content="A research demonstration showing how AI can make government benefit decisions more transparent than conventional automated systems — using New Zealand's Jobseeker Support as a live example.">
+  <meta property="og:title" content="Transparent AI Decisions — NZ Jobseeker Support">
+  <meta property="og:description" content="What if benefit decisions showed their reasoning? Try a live NZ Jobseeker Support application assessed by AI, with a full audit trail you can challenge.">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.31.0/fonts/tabler-icons.min.css">
+
+  <style>
+    /* ===================== RESET & BASE ===================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #F5F4F0;
+      --bg-card:      #FFFFFF;
+      --bg-dark:      #111827;
+      --ink:          #111827;
+      --ink-2:        #596175;
+      --ink-3:        #8892A4;
+      --border:       #E0DBD5;
+      --border-dark:  #2A3547;
+      --green:        #1A6335;
+      --green-bg:     #E7F4EC;
+      --green-border: #A8D5B8;
+      --amber:        #A05C0A;
+      --amber-bg:     #FEF3E2;
+      --amber-border: #F6C87A;
+      --blue:         #1C4F8C;
+      --blue-bg:      #EAF1FA;
+      --blue-border:  #90BAE8;
+      --red:          #8B1A1A;
+      --red-bg:       #FBE9E9;
+      --red-border:   #E8A5A5;
+      --radius:       8px;
+      --radius-sm:    5px;
+      --shadow:       0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:    0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: inherit; }
+    strong { font-weight: 600; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: .9em; background: var(--bg); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--border); }
+
+    /* ===================== LAYOUT ===================== */
+    .container        { max-width: 1040px; margin: 0 auto; padding: 0 2rem; }
+    .container-narrow { max-width: 760px;  margin: 0 auto; padding: 0 2rem; }
+    .container-demo   { max-width: 720px;  margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 90px 0; }
+
+    /* ===================== NAV ===================== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(17, 24, 39, 0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-dark);
+      height: 62px;
+      display: flex; align-items: center;
+    }
+    .nav-inner {
+      width: 100%; max-width: 1040px; margin: 0 auto;
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: 15px; font-weight: 700;
+      color: #fff; text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+    }
+    .nav-links { display: flex; align-items: center; gap: 1.75rem; }
+    .nav-links a {
+      font-size: 14px; color: var(--ink-3); text-decoration: none;
+      transition: color .15s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      padding: 7px 16px;
+      background: var(--green); color: #fff !important;
+      border-radius: var(--radius-sm); font-weight: 500;
+      transition: opacity .15s !important;
+    }
+    .nav-cta:hover { opacity: .85; }
+
+    /* ===================== HERO ===================== */
+    #hero {
+      background: var(--bg-dark);
+      padding: 130px 0 90px;
+      min-height: 100vh;
+      display: flex; align-items: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+      color: #6DD08E;
+      border: 1px solid rgba(109, 208, 142, .25);
+      background: rgba(109, 208, 142, .06);
+      padding: 5px 13px; border-radius: 20px;
+      margin-bottom: 1.75rem;
+    }
+    .hero-h1 {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: clamp(36px, 5.5vw, 64px);
+      font-weight: 700; color: #fff;
+      line-height: 1.1; letter-spacing: -.02em;
+      margin-bottom: 1.25rem;
+      max-width: 680px;
+    }
+    .hero-h1 em { font-style: italic; color: #6DD08E; }
+    .hero-p {
+      font-size: 17px; color: #8892A4; line-height: 1.75;
+      max-width: 520px; margin-bottom: 2.25rem;
+    }
+    .hero-actions {
+      display: flex; align-items: center; gap: 12px;
+      flex-wrap: wrap; margin-bottom: 4rem;
+    }
+    .btn-hero {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 26px;
+      background: var(--green); color: #fff;
+      border-radius: var(--radius-sm); font-size: 15px; font-weight: 500;
+      text-decoration: none; transition: opacity .15s;
+    }
+    .btn-hero:hover { opacity: .85; }
+    .btn-hero-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 20px;
+      background: transparent; color: #8892A4;
+      border: 1px solid #2A3547;
+      border-radius: var(--radius-sm); font-size: 14px;
+      text-decoration: none; transition: all .15s;
+    }
+    .btn-hero-ghost:hover { border-color: #4A5568; color: #fff; }
+
+    /* Hero comparison cards */
+    .hero-compare {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+      max-width: 820px;
+    }
+    .hc-panel {
+      border-radius: var(--radius); padding: 1.25rem; border: 1px solid;
+    }
+    .hc-bad  { background: rgba(139,26,26,.07); border-color: rgba(139,26,26,.3); }
+    .hc-good { background: rgba(26,99,53,.07);  border-color: rgba(26,99,53,.35); }
+    .hc-label {
+      font-size: 11px; font-weight: 500; letter-spacing: .08em;
+      text-transform: uppercase; margin-bottom: .85rem;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .hc-label-bad  { color: #E88080; }
+    .hc-label-good { color: #6DD08E; }
+    .hc-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; line-height: 1.9;
+    }
+    .hc-code-bad  { color: #E88080; }
+    .hc-code-good { color: #6DD08E; }
+    .redact {
+      display: inline-block;
+      background: rgba(139,26,26,.55); color: transparent;
+      border-radius: 2px; user-select: none; letter-spacing: .1em;
+    }
+
+    /* ===================== SECTION TYPOGRAPHY ===================== */
+    .eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--green);
+      margin-bottom: .6rem;
+    }
+    .s-h2 {
+      font-family: 'Libre Baskerville', Georgia, serif;
+      font-size: clamp(26px, 3.5vw, 40px);
+      font-weight: 700; line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .s-lead {
+      font-size: 16px; color: var(--ink-2); line-height: 1.75;
+      max-width: 640px;
+    }
+
+    /* ===================== ABOUT ===================== */
+    #about { background: #fff; }
+    .about-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.5rem; margin-top: 3rem;
+    }
+    .about-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .about-icon {
+      width: 38px; height: 38px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; margin-bottom: 1rem;
+    }
+    .about-icon-red { background: var(--red-bg); color: var(--red); }
+    .about-icon-green { background: var(--green-bg); color: var(--green); }
+    .about-title { font-size: 15px; font-weight: 600; margin-bottom: .4rem; }
+    .about-body  { font-size: 14px; color: var(--ink-2); line-height: 1.7; }
+
+    /* ===================== DEMO SECTION ===================== */
+    #demo { background: var(--bg); }
+
+    .api-warning {
+      background: var(--amber-bg); border: 1px solid var(--amber-border);
+      border-radius: var(--radius-sm); padding: .875rem 1.1rem;
+      font-size: 13px; color: #7A4A08; line-height: 1.6;
+      margin-bottom: 1.5rem; display: none;
+    }
+    .api-warning code { background: rgba(160,92,10,.1); border-color: var(--amber-border); }
+
+    /* Form cards */
+    .f-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      margin-bottom: .875rem; box-shadow: var(--shadow);
+    }
+    .f-section {
+      font-size: 10.5px; font-weight: 600; letter-spacing: .09em;
+      text-transform: uppercase; color: var(--ink-3);
+      padding-bottom: .8rem; margin-bottom: 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .field { margin-bottom: .9rem; }
+    .field:last-child { margin-bottom: 0; }
+    .field > label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: var(--ink-2); margin-bottom: 4px;
+    }
+    .req { color: #C0392B; margin-left: 2px; }
+    .hint { font-size: 12px; color: var(--ink-3); margin-top: 4px; line-height: 1.5; }
+
+    input[type="number"],
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-card); color: var(--ink);
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-appearance: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(28,79,140,.1);
+    }
+    textarea { resize: vertical; min-height: 70px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Chips for checkbox groups */
+    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip {
+      font-size: 12.5px; padding: 5px 11px; border-radius: 20px; cursor: pointer;
+      border: 1px solid; transition: all .15s; user-select: none;
+      display: flex; align-items: center; gap: 5px; line-height: 1.2;
+    }
+    .chip-off { background: var(--bg); color: var(--ink-2); border-color: var(--border); }
+    .chip-off:hover { border-color: #b0a9a2; }
+    .chip-on  { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+
+    /* Inline notices */
+    .notice {
+      border-radius: var(--radius-sm); padding: .8rem 1rem;
+      font-size: 13px; line-height: 1.6; margin: .6rem 0;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .notice i { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .notice-blue { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); }
+    .notice-amber { background: var(--amber-bg); border: 1px solid var(--amber-border); color: #7A4A08; }
+    .notice-red { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+
+    /* Live abatement preview */
+    .calc-preview {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--ink-2); line-height: 1.9;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: .7rem .9rem;
+      margin-top: .6rem;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 22px;
+      background: var(--green); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: opacity .15s;
+    }
+    .btn-primary:hover { opacity: .85; }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 16px;
+      background: none; color: var(--ink-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-size: 13px;
+      cursor: pointer; transition: all .15s;
+    }
+    .btn-ghost:hover { background: var(--bg); }
+    .btn-link {
+      background: none; border: none; color: var(--blue); font-size: 13px;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      display: inline-flex; align-items: center; gap: 5px; padding: 0;
+    }
+
+    .error-msg {
+      background: var(--red-bg); border: 1px solid var(--red-border);
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 13px; color: var(--red); margin-bottom: 1rem;
+    }
+
+    /* ===================== PROCESSING ===================== */
+    .processing {
+      text-align: center; padding: 3rem 0;
+    }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--green);
+      animation: spin .75s linear infinite;
+      margin: 0 auto 1.25rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .proc-h { font-size: 17px; font-weight: 500; margin-bottom: .4rem; }
+    .proc-sub { font-size: 13px; color: var(--ink-2); margin-bottom: 1.5rem; }
+    .proc-stages { text-align: left; max-width: 440px; margin: 0 auto; }
+    .proc-stage {
+      display: flex; align-items: center; gap: 10px;
+      padding: 5px 0; font-size: 13px; transition: opacity .4s;
+    }
+    .proc-stage i { font-size: 15px; }
+
+    /* ===================== RECEIPT ===================== */
+    .receipt {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow-md); margin-bottom: 1.25rem;
+    }
+    .receipt-head {
+      background: var(--bg); padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .meta-label {
+      font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+      color: var(--ink-3); margin-bottom: 3px;
+    }
+    .meta-ref {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; font-weight: 500; color: var(--ink);
+    }
+    .meta-val { font-size: 13px; font-weight: 500; }
+    .receipt-body { padding: 1.5rem; }
+
+    .dec-badge {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 10px 18px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600;
+      border: 1.5px solid; margin: .75rem 0 1.25rem;
+    }
+    .dec-badge i { font-size: 19px; }
+    .dec-approved { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+    .dec-declined { background: var(--red-bg); color: var(--red); border-color: var(--red-border); }
+    .dec-more     { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
+
+    .rate-block { margin: 0 0 1.25rem; }
+    .rate-num { font-size: 36px; font-weight: 600; color: var(--green); line-height: 1; }
+    .rate-label { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+    .rate-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+    .summary-block { margin-bottom: 1.25rem; }
+    .summary-text { font-size: 14px; color: var(--ink-2); line-height: 1.7; }
+
+    .details-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 1.25rem; }
+    .details-table td { padding: 6px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .details-table tr:last-child td { border-bottom: none; }
+    .details-table td:first-child { color: var(--ink-2); width: 48%; }
+    .details-table td:last-child  { font-weight: 500; text-align: right; }
+
+    /* Reasoning audit trail */
+    .reasoning-toggle {
+      background: none; border: none; color: var(--blue); font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; gap: 6px;
+      font-family: 'Inter', sans-serif; padding: 0; margin-bottom: .75rem;
+    }
+    .reasoning-box {
+      background: #F9F8F4;
+      border-left: 3px solid var(--blue); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: 1.25rem; overflow: hidden;
+    }
+    .reasoning-inner {
+      padding: 1.1rem 1.3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px; line-height: 1.9;
+      color: var(--ink-2); white-space: pre-wrap; word-break: break-word;
+      max-height: 420px; overflow-y: auto;
+    }
+    .cursor {
+      display: inline-block; width: 7px; height: 13px;
+      background: var(--green); vertical-align: -2px; margin-left: 1px;
+      animation: blink .9s step-start infinite;
+    }
+    @keyframes blink { 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
+
+    .obligations-box {
+      background: var(--blue-bg); border: 1px solid var(--blue-border);
+      border-radius: var(--radius-sm); padding: .9rem 1.1rem;
+      font-size: 13px; color: var(--blue); line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+
+    .rights-box {
+      background: var(--amber-bg); border: 1px solid var(--amber-border);
+      border-radius: var(--radius-sm); padding: 1rem 1.1rem;
+      font-size: 13px; color: #7A4A08; line-height: 1.75;
+    }
+    .rights-box a { color: var(--amber); font-weight: 500; }
+
+    .disclaimer {
+      font-size: 12px; color: var(--ink-3); line-height: 1.65;
+      text-align: center; margin-top: 1.25rem;
+    }
+    .disclaimer a { color: var(--blue); }
+
+    /* ===================== HOW IT WORKS ===================== */
+    #how { background: #fff; }
+    .how-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2rem; margin-top: 3rem;
+    }
+    .how-num {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--green-bg); color: var(--green);
+      font-size: 14px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .how-title { font-size: 15px; font-weight: 600; margin-bottom: .4rem; }
+    .how-body  { font-size: 14px; color: var(--ink-2); line-height: 1.7; }
+
+    /* ===================== CITATION ===================== */
+    #cite { background: var(--bg); border-top: 1px solid var(--border); padding: 60px 0; }
+    .cite-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 2rem; margin-top: 2.5rem;
+    }
+    .cite-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem;
+    }
+    .cite-source { font-size: 11px; color: var(--ink-3); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .06em; }
+    .cite-title  { font-size: 14px; font-weight: 500; margin-bottom: .4rem; }
+    .cite-url    { font-size: 12px; color: var(--blue); word-break: break-all; }
+    .cite-url a  { text-decoration: none; }
+    .cite-url a:hover { text-decoration: underline; }
+
+    /* ===================== FOOTER ===================== */
+    footer {
+      background: var(--bg-dark);
+      border-top: 1px solid var(--border-dark);
+      padding: 3rem 0 2rem;
+    }
+    .footer-inner { max-width: 1040px; margin: 0 auto; padding: 0 2rem; }
+    .footer-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 2rem; flex-wrap: wrap; margin-bottom: 2.5rem;
+    }
+    .footer-brand {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 15px; font-weight: 700; color: #fff; margin-bottom: .5rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .footer-desc { font-size: 13px; color: var(--ink-3); max-width: 290px; line-height: 1.65; }
+    .footer-col h4 {
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--ink-3); margin-bottom: .875rem;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: .45rem; }
+    .footer-col a { font-size: 13px; color: #8892A4; text-decoration: none; transition: color .15s; }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom {
+      padding-top: 1.5rem; border-top: 1px solid var(--border-dark);
+      font-size: 12px; color: var(--ink-3); line-height: 1.65;
+    }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 768px) {
+      nav { padding: 0 1rem; }
+      .nav-links .nav-link-item { display: none; }
+      .hero-compare { grid-template-columns: 1fr; }
+      .about-grid   { grid-template-columns: 1fr; }
+      .row2         { grid-template-columns: 1fr; }
+      .how-grid     { grid-template-columns: 1fr; gap: 1.5rem; }
+      .cite-grid    { grid-template-columns: 1fr; }
+      .footer-top   { flex-direction: column; }
+      section { padding: 64px 0; }
+      #hero { padding: 100px 0 60px; min-height: auto; }
+      .hero-h1 { letter-spacing: -.01em; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+
+    /* Utility */
+    .mt-sm  { margin-top: .5rem; }
+    .mt-md  { margin-top: 1rem; }
+    .mt-lg  { margin-top: 1.5rem; }
+    .mb-sm  { margin-bottom: .5rem; }
+    .mb-md  { margin-bottom: 1rem; }
+    .mb-lg  { margin-bottom: 1.5rem; }
+    [v-cloak] { display: none; }
+  </style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     NAV
+============================================================ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <span class="nav-dot"></span>
+      Transparent AI Decisions
+    </a>
+    <div class="nav-links">
+      <a href="#about" class="nav-link-item">The case</a>
+      <a href="#demo"  class="nav-link-item">Try it</a>
+      <a href="#how"   class="nav-link-item">How it works</a>
+      <a href="#cite"  class="nav-link-item">Sources</a>
+      <a href="#demo"  class="nav-cta">Start application</a>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-eyebrow">
+      <i class="ti ti-shield-check" style="font-size:13px"></i>
+      Research demonstration &nbsp;·&nbsp; New Zealand benefit system
+    </div>
+
+    <h1 class="hero-h1">
+      Benefit decisions<br>that <em>show their work</em>
+    </h1>
+
+    <p class="hero-p">
+      When algorithms denied Robodebt claims or convicted Post Office subpostmasters,
+      there was nothing to challenge. AI can do better — recording every inference
+      in plain language, creating an audit trail citizens can actually read and contest.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#demo" class="btn-hero">
+        <i class="ti ti-file-text"></i>
+        Try the NZ benefit demo
+      </a>
+      <a href="#about" class="btn-hero-ghost">
+        <i class="ti ti-chevron-down" style="font-size:15px"></i>
+        Read the case for transparency
+      </a>
+    </div>
+
+    <div class="hero-compare">
+      <div class="hc-panel hc-bad">
+        <div class="hc-label hc-label-bad">
+          <i class="ti ti-x" style="font-size:13px"></i>
+          Opaque automation
+        </div>
+        <div class="hc-code hc-code-bad">
+DECISION: DECLINED<br>
+Reference: E-002349<br>
+Reason: <span class="redact">&nbsp;███████████████&nbsp;</span><br>
+Method: <span class="redact">&nbsp;████████████&nbsp;</span><br>
+Override: <span class="redact">&nbsp;███&nbsp;</span><br>
+Status: FINAL — no appeal<br>
+<br>
+— No further information —
+        </div>
+      </div>
+      <div class="hc-panel hc-good">
+        <div class="hc-label hc-label-good">
+          <i class="ti ti-check" style="font-size:13px"></i>
+          AI with an audit trail
+        </div>
+        <div class="hc-code hc-code-good">
+1. AGE: 34 — criterion met.<br>
+2. RESIDENCY: NZ citizen<br>
+&nbsp;&nbsp; confirmed — criterion met.<br>
+3. WORK TEST: unemployed<br>
+&nbsp;&nbsp; since Jan 2025, seeking<br>
+&nbsp;&nbsp; work — criterion met.<br>
+4. INCOME: $0/wk &lt; $160<br>
+&nbsp;&nbsp; free zone — no abatement.<br>
+→ DECISION: APPROVED<br>
+→ $372.55/wk (1 Apr 2026)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     THE CASE
+============================================================ -->
+<section id="about">
+  <div class="container">
+    <div class="eyebrow">The problem</div>
+    <h2 class="s-h2">When algorithms decide,<br>who can you argue with?</h2>
+    <p class="s-lead">
+      The Australian Robodebt scheme illegally raised debts against welfare recipients using
+      automated income averaging — a flawed methodology buried in code, invisible to the people
+      it harmed. The UK Post Office Horizon scandal convicted hundreds of subpostmasters based on
+      accounting software errors that no one could examine. In both cases, citizens faced decisions
+      with no visible reasoning and no meaningful path to challenge them. AI language models offer
+      a fundamentally different approach.
+    </p>
+
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-icon about-icon-red">
+          <i class="ti ti-eye-off"></i>
+        </div>
+        <div class="about-title">Opaque rule engines</div>
+        <div class="about-body">
+          Traditional automated systems apply eligibility rules through code that citizens cannot
+          read. When a decision is wrong, there is no audit trail, no stated reasoning, and no
+          specific point to contest. The logic is inaccessible by design.
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="about-icon about-icon-green">
+          <i class="ti ti-eye"></i>
+        </div>
+        <div class="about-title">AI with a paper trail</div>
+        <div class="about-body">
+          A language model working through an eligibility decision produces its reasoning in plain
+          English. Every inference is stated. Every uncertainty is flagged. When a decision is wrong,
+          the specific erroneous step can be identified, quoted, and corrected.
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="about-icon about-icon-red">
+          <i class="ti ti-door-off"></i>
+        </div>
+        <div class="about-title">No right of reply</div>
+        <div class="about-body">
+          Without a stated reason, appeal is practically impossible. Citizens receive a decision
+          code, not an explanation. They cannot know which facts were considered, which were ignored,
+          or whether the system misunderstood their situation.
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="about-icon about-icon-green">
+          <i class="ti ti-scale"></i>
+        </div>
+        <div class="about-title">Embedded challenge rights</div>
+        <div class="about-body">
+          Every AI decision receipt includes plain-English instructions for challenging the outcome —
+          links to the formal review process, free legal help, and escalation paths. A challenge
+          becomes possible because the reasoning is readable.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     DEMO (Vue app)
+============================================================ -->
+<section id="demo">
+  <div class="container-demo">
+
+    <div class="eyebrow">Live demonstration</div>
+    <h2 class="s-h2" style="margin-bottom:.5rem">Apply for Jobseeker Support</h2>
+    <p style="font-size:15px;color:var(--ink-2);margin-bottom:1.75rem;line-height:1.7">
+      Enter your details below. The AI will assess your eligibility against official Work and
+      Income rules, show its full calculation, and issue a decision receipt with your right
+      to challenge clearly stated. Rates are from <strong>1 April 2026</strong>.
+    </p>
+
+    <!-- Shown if API key not set -->
+    <div class="api-warning" id="api-warning">
+      <i class="ti ti-key" style="font-size:15px;vertical-align:-2px;margin-right:7px"></i>
+      <strong>API key required:</strong> Open <code>index.html</code>, find <code>ANTHROPIC_API_KEY</code>
+      near the bottom and replace <code>'YOUR_ANTHROPIC_API_KEY'</code> with your key from
+      <a href="https://console.anthropic.com" target="_blank" style="color:var(--amber);font-weight:500">console.anthropic.com</a>.
+      For production, proxy calls through a backend to keep the key private.
+    </div>
+
+    <!-- Vue app root -->
+    <div id="demo-app" v-cloak>
+
+      <!-- =========== FORM =========== -->
+      <template v-if="step === 'form'">
+
+        <div v-if="error" class="error-msg">
+          <i class="ti ti-alert-circle" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>
+          {{ error }}
+        </div>
+
+        <!-- About you -->
+        <div class="f-card">
+          <div class="f-section">About you</div>
+
+          <div class="row2">
+            <div class="field">
+              <label>Age <span class="req">*</span></label>
+              <input type="number" v-model="form.age" min="14" max="110" placeholder="e.g. 34">
+            </div>
+            <div class="field">
+              <label>Citizenship / residency status <span class="req">*</span></label>
+              <select v-model="form.residency">
+                <option value="nz_citizen">New Zealand citizen</option>
+                <option value="permanent_resident">NZ permanent resident</option>
+                <option value="open_work_visa">Open work visa</option>
+                <option value="student_visa">Student visa</option>
+                <option value="visitor_visa">Visitor / tourist visa</option>
+                <option value="none">No current NZ visa or status</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="form.residency === 'student_visa' || form.residency === 'visitor_visa' || form.residency === 'none'" class="notice notice-amber mt-sm">
+            <i class="ti ti-info-circle"></i>
+            <span>This visa type is unlikely to qualify for Jobseeker Support. Work and Income will verify your status. If you arrived recently from overseas, eligibility may depend on your specific visa conditions.</span>
+          </div>
+
+          <div class="row2 mt-sm">
+            <div class="field">
+              <label>Relationship status</label>
+              <select v-model="form.relationship">
+                <option value="single">Single</option>
+                <option value="partnered_both">Partnered — partner is also unemployed or seeking benefit</option>
+                <option value="partnered_working">Partnered — partner is employed</option>
+                <option value="separated">Separated or divorced</option>
+                <option value="widowed">Widowed</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Dependent children under 18</label>
+              <select v-model="form.dependents">
+                <option value="0">None</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3+">3 or more</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employment situation -->
+        <div class="f-card">
+          <div class="f-section">Your employment situation</div>
+
+          <div class="field">
+            <label>Which best describes your current situation? <span class="req">*</span></label>
+            <select v-model="form.employment">
+              <option value="">— Select —</option>
+              <option value="unemployed_seeking">Unemployed and actively looking for work</option>
+              <option value="redundant">Recently made redundant</option>
+              <option value="resigned">Resigned or left my last job</option>
+              <option value="dismissed">Dismissed / let go by employer</option>
+              <option value="part_time_seeking">Working part-time and seeking more hours</option>
+              <option value="health_reduced">Health condition has reduced my hours</option>
+              <option value="health_unable">Health condition — currently unable to work</option>
+              <option value="self_employed_low">Self-employed with significantly reduced income</option>
+              <option value="employed_fulltime">Employed full-time (30+ hrs/week)</option>
+            </select>
+          </div>
+
+          <div v-if="form.employment === 'resigned'" class="notice notice-amber">
+            <i class="ti ti-info-circle"></i>
+            <span>If you resigned without good reason a stand-down period of up to 13 weeks may apply before payments start. Work and Income will assess your reason for leaving.</span>
+          </div>
+
+          <div v-if="form.employment === 'employed_fulltime'" class="notice notice-amber">
+            <i class="ti ti-info-circle"></i>
+            <span>People in full-time employment generally do not qualify for Jobseeker Support unless a health condition is reducing their capacity to work.</span>
+          </div>
+
+          <div v-if="isHealthSituation" class="field mt-sm">
+            <label>Describe how the condition affects your ability to work <span class="req">*</span></label>
+            <textarea v-model="form.healthDetails" rows="2" placeholder="e.g. Recovering from surgery — GP expects return to full work in 8 weeks. Medical certificate available."></textarea>
+            <p class="hint">You will need to provide a medical certificate from a registered health practitioner when you apply through MyMSD.</p>
+          </div>
+
+          <div class="field" :class="{ 'mt-sm': !isHealthSituation }">
+            <label>Are you currently studying?</label>
+            <select v-model="form.studying">
+              <option value="no">No</option>
+              <option value="fulltime">Yes — full-time study (30+ hrs/week)</option>
+              <option value="parttime">Yes — part-time study only</option>
+              <option value="approved_training">Yes — approved employment training through Work and Income</option>
+            </select>
+            <p v-if="form.studying === 'fulltime'" class="hint" style="color:var(--red)">
+              Full-time students generally cannot receive Jobseeker Support. StudyLink has separate hardship support — see <a href="https://www.studylink.govt.nz" target="_blank" style="color:var(--blue)">studylink.govt.nz</a>.
+            </p>
+          </div>
+        </div>
+
+        <!-- Income -->
+        <div class="f-card">
+          <div class="f-section">Income</div>
+          <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:.9rem">
+            Once approved, you must declare <strong>all income weekly</strong> to Work and Income. Undeclared income
+            can result in an overpayment debt. Include all sources below.
+          </p>
+
+          <div :class="form.relationship.startsWith('partnered') ? 'row2' : ''">
+            <div class="field">
+              <label>Your gross weekly income (before tax) <span class="req">*</span></label>
+              <input type="number" v-model.number="form.income" min="0" placeholder="0">
+              <p class="hint">Wages, ACC payments, child support received, any regular income.</p>
+            </div>
+            <div v-if="form.relationship.startsWith('partnered')" class="field">
+              <label>Partner's gross weekly income <span class="req">*</span></label>
+              <input type="number" v-model.number="form.partnerIncome" min="0" placeholder="0">
+            </div>
+          </div>
+
+          <!-- Live abatement preview -->
+          <div v-if="form.income > 0" class="calc-preview">
+            <template v-if="form.income <= 160">
+              Income ${{ form.income }}/wk ≤ $160 income-free amount
+              → No abatement — full benefit rate applies
+            </template>
+            <template v-else>
+              Income ${{ form.income }}/wk exceeds $160 income-free amount
+              → Single abatement: (${{ form.income }} − $160) × 0.70 = ${{ ((form.income - 160) * 0.70).toFixed(2) }}/wk reduction
+              → Estimated adjusted benefit: ${{ Math.max(0, baseRate - ((form.income - 160) * 0.70)).toFixed(2) }}/wk
+              <template v-if="form.income > 690">
+              ⚠ Income may exceed the cut-out point — eligibility uncertain
+              </template>
+            </template>
+          </div>
+
+          <div class="field mt-sm">
+            <label>Other income sources (select all that apply)</label>
+            <div class="chip-group">
+              <span
+                v-for="src in incomeSources"
+                :key="src"
+                class="chip"
+                :class="form.otherIncomeSources.includes(src) ? 'chip-on' : 'chip-off'"
+                @click="toggleSource(src)"
+              >
+                <i :class="form.otherIncomeSources.includes(src) ? 'ti ti-check' : 'ti ti-plus'" style="font-size:12px"></i>
+                {{ src }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assets -->
+        <div class="f-card">
+          <div class="f-section">Savings &amp; assets</div>
+
+          <div class="field">
+            <label>Total liquid savings and cash assets (NZD) <span class="req">*</span></label>
+            <input type="number" v-model.number="form.assets" min="0" placeholder="e.g. 1500">
+            <p class="hint">
+              Include: bank accounts, term deposits, shares, cryptocurrency, and cash savings.
+              Do <strong>not</strong> include: your main family home, one personal vehicle (up to value limits),
+              or KiwiSaver funds not yet accessible.
+            </p>
+          </div>
+
+          <div class="field">
+            <label>Do you own property other than your main home?</label>
+            <select v-model="form.otherProperty">
+              <option value="no">No</option>
+              <option value="rental">Yes — rental or investment property</option>
+              <option value="selling">Yes — currently being sold</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Additional -->
+        <div class="f-card">
+          <div class="f-section">Additional information</div>
+          <div class="field">
+            <label>Anything else Work and Income should know? (optional)</label>
+            <textarea v-model="form.other" rows="3" placeholder="e.g. Returned to NZ last month after working overseas. Recently separated. Have caring responsibilities for an elderly parent. Previously received Jobseeker Support in 2022..."></textarea>
+          </div>
+        </div>
+
+        <button @click="submit" class="btn-primary">
+          <i class="ti ti-cpu"></i>
+          Submit for AI assessment
+        </button>
+
+        <p style="font-size:12px;color:var(--ink-3);margin-top:.6rem;line-height:1.65">
+          Research demo only — not a real Work and Income application. For actual applications:
+          <a href="https://my.msd.govt.nz" target="_blank" style="color:var(--blue)">my.msd.govt.nz</a>
+          or call <strong>0800 559 009</strong>. You have 20 working days from first contact to complete your application.
+        </p>
+      </template>
+
+
+      <!-- =========== PROCESSING =========== -->
+      <template v-else-if="step === 'processing'">
+        <div class="processing">
+          <div class="spinner"></div>
+          <h3 class="proc-h">Assessing your application</h3>
+          <p class="proc-sub">{{ currentStage }}{{ dots }}</p>
+          <div class="proc-stages">
+            <div
+              v-for="(stage, i) in stages"
+              :key="i"
+              class="proc-stage"
+              :style="{ opacity: i <= stageIndex ? 1 : 0.28 }"
+            >
+              <i
+                :class="i < stageIndex ? 'ti ti-circle-check' : i === stageIndex ? 'ti ti-circle-dot' : 'ti ti-circle'"
+                class="proc-icon"
+                :style="{ color: i < stageIndex ? 'var(--green)' : i === stageIndex ? 'var(--blue)' : 'var(--ink-3)' }"
+              ></i>
+              {{ stage }}
+            </div>
+          </div>
+        </div>
+      </template>
+
+
+      <!-- =========== RESULT / RECEIPT =========== -->
+      <template v-else-if="step === 'result' && result">
+
+        <div class="receipt">
+
+          <!-- Receipt header -->
+          <div class="receipt-head">
+            <div>
+              <div class="meta-label">Reference number</div>
+              <div class="meta-ref">{{ result.ref }}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="meta-label">Date issued</div>
+              <div class="meta-val">{{ result.timestamp }}</div>
+            </div>
+          </div>
+
+          <div class="receipt-body">
+
+            <!-- Claim type -->
+            <div class="mb-md">
+              <div class="meta-label">Claim type</div>
+              <div style="font-size:14px;font-weight:500;margin-top:3px">Jobseeker Support — Work and Income New Zealand (MSD)</div>
+              <div style="font-size:12px;color:var(--ink-3);margin-top:2px">Rates from 1 April 2026 · Social Security Act 2018</div>
+            </div>
+
+            <!-- Decision badge -->
+            <div class="mb-sm">
+              <div class="meta-label">Decision</div>
+              <div
+                class="dec-badge"
+                :class="{
+                  'dec-approved': result.decision === 'APPROVED',
+                  'dec-declined': result.decision === 'DECLINED',
+                  'dec-more': result.decision === 'FURTHER_INFORMATION_NEEDED'
+                }"
+              >
+                <i :class="{
+                  'ti ti-circle-check': result.decision === 'APPROVED',
+                  'ti ti-circle-x':     result.decision === 'DECLINED',
+                  'ti ti-help-circle':  result.decision === 'FURTHER_INFORMATION_NEEDED'
+                }"></i>
+                {{ decisionLabel }}
+              </div>
+            </div>
+
+            <!-- Rate -->
+            <div v-if="result.decision === 'APPROVED' && result.rate" class="rate-block mb-lg">
+              <div class="meta-label">Estimated weekly payment</div>
+              <div class="rate-num">{{ result.adjustedRate || result.rate }}</div>
+              <div class="rate-label">Gross before tax at "M" tax code · subject to formal MSD verification</div>
+              <div v-if="result.adjustedRate && result.adjustedRate !== result.rate" class="rate-sub">
+                Base rate {{ result.rate }} · reduced by income above $160/wk free zone
+              </div>
+              <div class="rate-sub" style="color:var(--green)">
+                + Winter Energy Payment ($20.46/wk) automatically added May–October
+              </div>
+            </div>
+
+            <!-- Summary -->
+            <div v-if="result.summary" class="summary-block mb-lg">
+              <div class="meta-label">Summary</div>
+              <p class="summary-text" style="margin-top:5px">{{ result.summary }}</p>
+            </div>
+
+            <!-- Details assessed -->
+            <div class="mb-lg">
+              <div class="meta-label">Information assessed in this decision</div>
+              <table class="details-table" style="margin-top:6px">
+                <tbody>
+                  <tr><td>Age</td><td>{{ form.age }}</td></tr>
+                  <tr><td>Citizenship / residency</td><td>{{ residencyLabel }}</td></tr>
+                  <tr><td>Relationship status</td><td>{{ relationshipLabel }}</td></tr>
+                  <tr><td>Employment situation</td><td>{{ employmentLabel }}</td></tr>
+                  <tr><td>Gross weekly income</td><td>${{ form.income }}</td></tr>
+                  <tr v-if="form.relationship.startsWith('partnered')">
+                    <td>Partner gross weekly income</td><td>${{ form.partnerIncome }}</td>
+                  </tr>
+                  <tr><td>Dependent children (under 18)</td><td>{{ form.dependents }}</td></tr>
+                  <tr><td>Liquid savings / assets</td><td>${{ form.assets }}</td></tr>
+                  <tr><td>Study status</td><td>{{ studyLabel }}</td></tr>
+                  <tr v-if="form.otherIncomeSources.length > 0">
+                    <td>Other income sources declared</td><td>{{ form.otherIncomeSources.join(', ') }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Obligations (if approved) -->
+            <div v-if="result.decision === 'APPROVED' && result.obligations" class="mb-md">
+              <button class="reasoning-toggle" @click="showObligations = !showObligations">
+                <i :class="showObligations ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:13px"></i>
+                {{ showObligations ? 'Hide' : 'Show' }} your obligations if approved
+              </button>
+              <div v-if="showObligations" class="obligations-box">
+                <div style="font-weight:600;margin-bottom:.4rem">
+                  <i class="ti ti-clipboard-check" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>
+                  What you must do while receiving Jobseeker Support
+                </div>
+                <div style="white-space:pre-wrap">{{ result.obligations }}</div>
+              </div>
+            </div>
+
+            <!-- Reasoning audit trail -->
+            <div class="mb-md">
+              <button class="reasoning-toggle" @click="toggleReasoning">
+                <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:13px"></i>
+                {{ showReasoning ? 'Hide' : 'Show' }} complete AI reasoning audit trail
+              </button>
+              <div v-if="showReasoning" class="reasoning-box">
+                <div style="padding:.5rem 1.3rem;font-size:11px;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--bg)">
+                  AI reasoning transcript · {{ result.timestamp }} · ref {{ result.ref }}
+                </div>
+                <div class="reasoning-inner">{{ typedReasoning }}<span v-if="isTyping" class="cursor"></span></div>
+              </div>
+            </div>
+
+            <!-- Challenge rights -->
+            <div v-if="result.rights">
+              <div class="meta-label">Your right to challenge this decision</div>
+              <div class="rights-box" style="margin-top:6px">
+                <div style="font-weight:600;margin-bottom:.6rem">
+                  <i class="ti ti-scale" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>
+                  How to challenge or request a review
+                </div>
+                <div style="white-space:pre-wrap">{{ result.rights }}</div>
+                <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--amber-border);font-size:12px">
+                  Official review page:
+                  <a href="https://www.workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html" target="_blank">
+                    workandincome.govt.nz → Feedback and complaints → Review of a decision
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /receipt-body -->
+        </div><!-- /receipt -->
+
+        <!-- Actions -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem">
+          <button @click="reset" class="btn-ghost">
+            <i class="ti ti-arrow-left" style="font-size:14px"></i>
+            Start a new application
+          </button>
+          <a href="https://my.msd.govt.nz" target="_blank" class="btn-ghost">
+            Apply for real at MyMSD
+            <i class="ti ti-external-link" style="font-size:13px"></i>
+          </a>
+        </div>
+
+        <p class="disclaimer">
+          Research demonstration only — not legally binding. Real applications at
+          <a href="https://my.msd.govt.nz" target="_blank">my.msd.govt.nz</a> or call
+          <strong>0800 559 009</strong>. Rates sourced from
+          <a href="https://www.workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html" target="_blank">workandincome.govt.nz</a>,
+          1 April 2026.
+        </p>
+
+      </template>
+
+    </div><!-- /demo-app -->
+  </div><!-- /container-demo -->
+</section>
+
+
+<!-- ============================================================
+     HOW IT WORKS
+============================================================ -->
+<section id="how">
+  <div class="container">
+    <div class="eyebrow">The mechanism</div>
+    <h2 class="s-h2">How transparent AI decisions work</h2>
+    <p class="s-lead">
+      The key difference from both human caseworkers and rule-based automation is not speed
+      or accuracy — it is the production of a legible reasoning record at the moment of decision.
+    </p>
+
+    <div class="how-grid">
+      <div>
+        <div class="how-num">1</div>
+        <div class="how-title">Structured input</div>
+        <div class="how-body">
+          The applicant provides information about their situation — age, residency, income,
+          assets, employment status. These structured inputs are passed to the AI exactly as
+          entered, without pre-processing that could introduce errors.
+        </div>
+      </div>
+      <div>
+        <div class="how-num">2</div>
+        <div class="how-title">Step-by-step reasoning</div>
+        <div class="how-body">
+          The AI applies each eligibility criterion in sequence — written out in plain English.
+          Where it must infer something (e.g. that savings are liquid), it states the inference
+          explicitly. Uncertainties are flagged, not silently resolved.
+        </div>
+      </div>
+      <div>
+        <div class="how-num">3</div>
+        <div class="how-title">The decision receipt</div>
+        <div class="how-body">
+          A timestamped record is issued: the decision, the estimated payment, the full reasoning
+          trail, and the specific steps to challenge the outcome. The receipt can be printed,
+          shared with a lawyer, or quoted in a formal review.
+        </div>
+      </div>
+      <div>
+        <div class="how-num">4</div>
+        <div class="how-title">Identifying the error</div>
+        <div class="how-body">
+          If a decision is wrong, the reasoning trail tells you exactly where. The applicant
+          can point to the specific line — "you assumed my $3,000 was liquid savings but it is
+          in a term deposit" — rather than arguing against an opaque outcome.
+        </div>
+      </div>
+      <div>
+        <div class="how-num">5</div>
+        <div class="how-title">Formal challenge</div>
+        <div class="how-body">
+          The receipt links directly to Work and Income's Review of Decision process. The
+          reasoning record provides the material for the review — a named claim, a stated
+          inference, and the correction. No special expertise is needed to begin a challenge.
+        </div>
+      </div>
+      <div>
+        <div class="how-num">6</div>
+        <div class="how-title">Human oversight</div>
+        <div class="how-body">
+          AI decisions should trigger human review before they take legal effect. The reasoning
+          trail makes that review far faster — a caseworker can audit the AI's logic in minutes,
+          not hours. The AI assists; it does not replace the decision-maker.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     SOURCES & CITATIONS
+============================================================ -->
+<section id="cite">
+  <div class="container">
+    <div class="eyebrow">Sources</div>
+    <h2 class="s-h2">Data and eligibility rules</h2>
+    <p class="s-lead">
+      All eligibility criteria, payment rates, and application process information used in
+      this demonstration are drawn from official Work and Income New Zealand sources.
+    </p>
+
+    <div class="cite-grid">
+      <div class="cite-card">
+        <div class="cite-source">workandincome.govt.nz</div>
+        <div class="cite-title">Benefit rates from 1 April 2026</div>
+        <div class="cite-url">
+          <a href="https://www.workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html" target="_blank">
+            workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html
+          </a>
+        </div>
+      </div>
+      <div class="cite-card">
+        <div class="cite-source">workandincome.govt.nz</div>
+        <div class="cite-title">Apply online — process and requirements</div>
+        <div class="cite-url">
+          <a href="https://www.workandincome.govt.nz/online-services/apply/index.html" target="_blank">
+            workandincome.govt.nz/online-services/apply/index.html
+          </a>
+        </div>
+      </div>
+      <div class="cite-card">
+        <div class="cite-source">workandincome.govt.nz</div>
+        <div class="cite-title">Jobseeker Support — income deduction tables</div>
+        <div class="cite-url">
+          <a href="https://www.workandincome.govt.nz/on-a-benefit/tell-us/income/deduction-tables/jobseeker-support-single.html" target="_blank">
+            workandincome.govt.nz/on-a-benefit/tell-us/income/deduction-tables/
+          </a>
+        </div>
+      </div>
+      <div class="cite-card">
+        <div class="cite-source">workandincome.govt.nz</div>
+        <div class="cite-title">Review of a decision — challenge rights</div>
+        <div class="cite-url">
+          <a href="https://www.workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html" target="_blank">
+            workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html
+          </a>
+        </div>
+      </div>
+      <div class="cite-card">
+        <div class="cite-source">workandincome.govt.nz</div>
+        <div class="cite-title">Jobseeker Support — product page and obligations</div>
+        <div class="cite-url">
+          <a href="https://www.workandincome.govt.nz/products/a-z-benefits/jobseeker-support.html" target="_blank">
+            workandincome.govt.nz/products/a-z-benefits/jobseeker-support.html
+          </a>
+        </div>
+      </div>
+      <div class="cite-card">
+        <div class="cite-source">legislation.govt.nz</div>
+        <div class="cite-title">Social Security Act 2018 — eligibility framework</div>
+        <div class="cite-url">
+          <a href="https://www.legislation.govt.nz/act/public/2018/0032/latest/whole.html" target="_blank">
+            legislation.govt.nz/act/public/2018/0032/latest/whole.html
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+============================================================ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+
+      <div>
+        <div class="footer-brand">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
+          Transparent AI Decisions
+        </div>
+        <p class="footer-desc">
+          A research demonstration showing how AI language models can make
+          government decisions more transparent and challengeable than
+          conventional automated systems.
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h4>On this page</h4>
+        <ul>
+          <li><a href="#about">The case for transparency</a></li>
+          <li><a href="#demo">Try the NZ benefit demo</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#cite">Sources and citations</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Work and Income NZ</h4>
+        <ul>
+          <li><a href="https://my.msd.govt.nz" target="_blank">Apply via MyMSD</a></li>
+          <li><a href="https://www.workandincome.govt.nz/products/a-z-benefits/jobseeker-support.html" target="_blank">Jobseeker Support info</a></li>
+          <li><a href="https://www.workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html" target="_blank">Review of decisions</a></li>
+          <li><a href="https://www.workandincome.govt.nz/about-work-and-income/contact-us/phone-numbers.html" target="_blank">Contact: 0800 559 009</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Related reading</h4>
+        <ul>
+          <li><a href="https://robodebt.royalcommission.gov.au" target="_blank">Robodebt Royal Commission</a></li>
+          <li><a href="https://www.postofficetrial.com" target="_blank">Post Office Horizon inquiry</a></li>
+          <li><a href="https://www.legislation.govt.nz/act/public/2018/0032/latest/whole.html" target="_blank">Social Security Act 2018</a></li>
+          <li><a href="https://www.anthropic.com" target="_blank">Anthropic (Claude API)</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <strong style="color:#8892A4">Research demonstration only.</strong>
+      This is not a real Work and Income NZ system and assessments are not legally binding.
+      For actual benefit applications, visit <a href="https://my.msd.govt.nz" target="_blank" style="color:#6892C4">my.msd.govt.nz</a>
+      or call Work and Income on <strong style="color:#8892A4">0800 559 009</strong>.
+      Payment rates sourced from workandincome.govt.nz (1 April 2026). Built using the Anthropic Claude API.
+    </div>
+  </div>
+</footer>
+
+
+<!-- ============================================================
+     SCRIPTS
+============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.prod.min.js"></script>
+
+<script>
+/*
+ * ================================================================
+ *  CONFIGURATION
+ * ================================================================
+ *
+ *  OPTION 1 — Direct API call (development / demo only)
+ *  Replace with your key from https://console.anthropic.com
+ *  ⚠️ Never expose a real API key in production frontend code.
+ *
+ *  OPTION 2 — Backend proxy (recommended for production)
+ *  Set PROXY_URL to your server endpoint, leave ANTHROPIC_API_KEY empty.
+ *  Your server receives the request and adds the API key server-side.
+ *
+ * ================================================================
+ */
+/*
+ * The site routes all AI calls through the backend proxy at /api/assess.
+ * The server reads ANTHROPIC_API_KEY from its environment — the key never
+ * reaches the browser.
+ *
+ * For local testing without a server you can temporarily set
+ * ANTHROPIC_API_KEY to your key and clear PROXY_URL, but never
+ * deploy a real key in frontend code.
+ */
+const ANTHROPIC_API_KEY = '';           // leave empty — use proxy in production
+const PROXY_URL         = '/api/assess'; // handled by server.js
+const MODEL             = 'claude-sonnet-4-6';
+
+if (!PROXY_URL && !ANTHROPIC_API_KEY) {
+  document.getElementById('api-warning').style.display = 'block';
+}
+
+/* ================================================================
+   SYSTEM PROMPT — Official NZ Jobseeker Support rules
+   Sources: workandincome.govt.nz (verified June 2026)
+================================================================ */
+const SYSTEM_PROMPT = `You are an AI decision-maker assessing NZ Jobseeker Support eligibility.
+Your role is to demonstrate transparent AI governance: every step of your reasoning must be explicit,
+stated in plain English, and challengeable by the applicant.
+
+OFFICIAL RATES (from 1 April 2026 — Annual General Adjustment):
+Source: workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html
+- Single 18–24, no children:          approx $348/week gross
+- Single 25+, no children:            $372.55/week gross
+- Single (any age) with dependants:   approx $430/week gross (higher rate applies)
+- Partnered (each, if both eligible): approx $313/week gross each
+- Winter Energy Payment (automatic, May–Oct): $20.46/wk single · $31.82/wk with dependants
+
+INCOME ABATEMENT RULES (workandincome.govt.nz — income deduction tables):
+- Income-free amount: $160/week gross (before tax)
+- SINGLE: benefit reduces by $0.70 per $1 earned above $160/week
+  Formula: Reduction = (gross weekly income − $160) × 0.70
+  Adjusted benefit = base rate − reduction
+- COUPLE (both eligible for benefit in own right): each benefit reduces by $0.35 per $1 of
+  COMBINED income above $160/week
+  Formula: Reduction each = (combined gross income − $160) × 0.35
+- COUPLE (only one eligible): use single abatement rules on applicant income only
+- Gross income cut-out point (approx): ~$690/wk single 25+, varies with dependants
+
+ELIGIBILITY CRITERIA (Social Security Act 2018):
+1. AGE: Must be 18 or over. Exception: 16–17 if has dependent children or approved by MSD.
+2. RESIDENCY: Must be NZ citizen, permanent resident, or hold an approved visa with work rights.
+   Must be ordinarily resident in NZ at time of application.
+3. EMPLOYMENT SITUATION: Must NOT be in full-time employment (30+ hrs/week). OR: has a
+   health condition, injury, or disability reducing capacity to work — even if still employed.
+4. WORK TEST: Must be available for and actively seeking full-time work — UNLESS:
+   - Medically certified as unable to work
+   - Caring for a severely disabled person
+   - Granted an exemption by MSD
+5. STUDY: Cannot be in full-time study (30+ hrs/week). Exceptions: approved employment
+   training or retraining courses arranged through Work and Income.
+6. INCOME TEST: Combined gross income must be below the weekly cut-out point.
+
+OBLIGATIONS once receiving Jobseeker Support:
+- Actively seek work and attend Work and Income appointments
+- Declare ALL income to Work and Income weekly
+- Notify MSD of any change in circumstances (relationship, income, address, work)
+- Reapply every 26 weeks (changed from 52 weeks as of 1 July 2025)
+- If health condition: provide medical certificate and renew before expiry
+
+REVIEW AND CHALLENGE PROCESS:
+- Applicants can request a Review of Decision within 3 months of the decision
+- Review page: workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html
+- Can escalate to Social Security Appeal Authority (independent tribunal)
+- Free help: Citizens Advice Bureau, Community Law Centres, Beneficiary Advisory Services
+- Call 0800 559 009 to initiate a review
+
+RESPONSE FORMAT — use EXACTLY these XML tags, nothing outside them:
+
+<reasoning>
+Work through every criterion numbered and explicitly. Show income calculations with actual numbers.
+State exactly what you are inferring, what evidence supports it, and what you are uncertain about.
+1. AGE: ...
+2. RESIDENCY: ...
+3. EMPLOYMENT SITUATION: ...
+4. WORK TEST: ...
+5. STUDY STATUS: ...
+6. INCOME TEST (show formula with numbers): ...
+ADDITIONAL ENTITLEMENTS TO NOTE: ...
+CONCLUSION: ...
+</reasoning>
+<decision>APPROVED or DECLINED or FURTHER_INFORMATION_NEEDED</decision>
+<rate>estimated weekly gross NZD (prefix with "estimated ") or N/A</rate>
+<adjusted_rate>weekly rate after income abatement if income above $160, otherwise same as rate</adjusted_rate>
+<summary>3 plain-English sentences for the applicant. If approved, mention Winter Energy Payment.</summary>
+<obligations>Key obligations if approved (2–4 bullet points), or N/A if declined</obligations>
+<rights>Numbered steps to challenge or review this decision. Include the exact URL for the Review of Decision page.</rights>`;
+
+
+/* ================================================================
+   VUE APPLICATION
+================================================================ */
+const { createApp, ref, computed, reactive } = Vue;
+
+createApp({
+  setup() {
+    // ---- State ----
+    const step        = ref('form');
+    const error       = ref('');
+    const result      = ref(null);
+    const reasoning   = ref('');
+    const typedReasoning = ref('');
+    const isTyping    = ref(false);
+    const showReasoning  = ref(false);
+    const showObligations = ref(false);
+    const stageIndex  = ref(0);
+    const dots        = ref('.');
+
+    const form = reactive({
+      age:               '',
+      residency:         'nz_citizen',
+      relationship:      'single',
+      dependents:        '0',
+      employment:        '',
+      healthDetails:     '',
+      studying:          'no',
+      income:            0,
+      partnerIncome:     0,
+      assets:            '',
+      otherProperty:     'no',
+      otherIncomeSources:[],
+      other:             '',
+    });
+
+    // ---- Reference data ----
+    const incomeSources = [
+      'ACC payments', 'Child support received', 'Rental income',
+      'Dividends / investments', 'Overseas pension', 'Boarder / flatmate payments',
+      'Self-employment income', 'Other government payments',
+    ];
+
+    const stages = [
+      'Verifying residency and citizenship status',
+      'Checking employment situation and work test',
+      'Calculating income abatement ($160 free zone)',
+      'Checking study status',
+      'Assessing assets and other circumstances',
+      'Formulating decision and preparing receipt',
+    ];
+
+    // ---- Computed ----
+    const isHealthSituation = computed(() =>
+      form.employment === 'health_reduced' || form.employment === 'health_unable'
+    );
+
+    const baseRate = computed(() => {
+      const age = parseInt(form.age) || 0;
+      const hasDeps = parseInt(form.dependents) > 0;
+      if (hasDeps) return 430;
+      if (age < 25) return 348;
+      return 372.55;
+    });
+
+    const decisionLabel = computed(() => {
+      if (!result.value) return '';
+      const d = result.value.decision;
+      if (d === 'APPROVED') return 'Approved — eligible for Jobseeker Support';
+      if (d === 'DECLINED') return 'Declined — not eligible at this time';
+      return 'Further information needed';
+    });
+
+    const residencyLabel = computed(() => ({
+      nz_citizen: 'NZ citizen',
+      permanent_resident: 'Permanent resident',
+      open_work_visa: 'Open work visa',
+      student_visa: 'Student visa',
+      visitor_visa: 'Visitor visa',
+      none: 'No current status',
+    }[form.residency] || form.residency));
+
+    const relationshipLabel = computed(() => ({
+      single: 'Single',
+      partnered_both: 'Partnered — partner also seeking benefit',
+      partnered_working: 'Partnered — partner is employed',
+      separated: 'Separated or divorced',
+      widowed: 'Widowed',
+    }[form.relationship] || form.relationship));
+
+    const employmentLabel = computed(() => ({
+      unemployed_seeking:  'Unemployed, seeking work',
+      redundant:           'Made redundant',
+      resigned:            'Resigned',
+      dismissed:           'Dismissed by employer',
+      part_time_seeking:   'Part-time, seeking more hours',
+      health_reduced:      'Health condition reduced hours',
+      health_unable:       'Health condition — unable to work',
+      self_employed_low:   'Self-employed, reduced income',
+      employed_fulltime:   'Employed full-time',
+    }[form.employment] || form.employment));
+
+    const studyLabel = computed(() => ({
+      no:               'Not studying',
+      fulltime:         'Full-time study',
+      parttime:         'Part-time study',
+      approved_training:'Approved employment training',
+    }[form.studying] || form.studying));
+
+    // ---- Methods ----
+    function toggleSource(src) {
+      const idx = form.otherIncomeSources.indexOf(src);
+      if (idx >= 0) form.otherIncomeSources.splice(idx, 1);
+      else form.otherIncomeSources.push(src);
+    }
+
+    function buildPrompt() {
+      return `JOBSEEKER SUPPORT APPLICATION
+Date: ${new Date().toLocaleDateString('en-NZ', { dateStyle: 'long' })}
+
+APPLICANT DETAILS:
+- Age: ${form.age}
+- Citizenship/residency: ${residencyLabel.value}
+- Relationship status: ${relationshipLabel.value}
+- Dependent children (under 18): ${form.dependents}
+
+EMPLOYMENT SITUATION:
+- Current situation: ${employmentLabel.value}${form.healthDetails ? '\n- Health condition detail: ' + form.healthDetails : ''}
+- Study status: ${studyLabel.value}
+
+INCOME (gross weekly, before tax):
+- Applicant: $${form.income} NZD
+${form.relationship.startsWith('partnered') ? '- Partner: $' + form.partnerIncome + ' NZD' : ''}
+${form.otherIncomeSources.length > 0 ? '- Other declared income sources: ' + form.otherIncomeSources.join(', ') : '- No other income sources declared'}
+
+ASSETS AND PROPERTY:
+- Liquid savings and cash assets: $${form.assets} NZD
+- Other property (beyond main home): ${form.otherProperty}
+
+ADDITIONAL INFORMATION:
+${form.other || 'None provided'}
+
+Please assess Jobseeker Support eligibility with full transparent reasoning. Show all income calculations with actual numbers. Issue the decision in the required XML format.`.trim();
+    }
+
+    function validate() {
+      if (!form.age || isNaN(parseInt(form.age))) {
+        error.value = 'Please enter your age.';
+        return false;
+      }
+      if (!form.employment) {
+        error.value = 'Please select your current employment situation.';
+        return false;
+      }
+      if (form.assets === '' || form.assets === null) {
+        error.value = 'Please enter your liquid savings and assets (enter 0 if none).';
+        return false;
+      }
+      if (isHealthSituation.value && !form.healthDetails.trim()) {
+        error.value = 'Please briefly describe how the health condition affects your ability to work.';
+        return false;
+      }
+      return true;
+    }
+
+    async function submit() {
+      if (!validate()) return;
+      error.value = '';
+
+      if (ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY' && !PROXY_URL) {
+        error.value = 'API key not configured. See the setup instructions above.';
+        return;
+      }
+
+      step.value = 'processing';
+      stageIndex.value = 0;
+
+      // Animate stages
+      const stageTimer = setInterval(() => {
+        stageIndex.value = Math.min(stageIndex.value + 1, stages.length - 1);
+      }, 1800);
+      const dotTimer = setInterval(() => {
+        dots.value = dots.value.length >= 3 ? '.' : dots.value + '.';
+      }, 500);
+
+      try {
+        const usingProxy = !!PROXY_URL;
+        const url     = usingProxy ? PROXY_URL : 'https://api.anthropic.com/v1/messages';
+        const headers = { 'Content-Type': 'application/json' };
+
+        // When calling the Anthropic API directly from the browser (dev only)
+        if (!usingProxy && ANTHROPIC_API_KEY) {
+          headers['x-api-key']         = ANTHROPIC_API_KEY;
+          headers['anthropic-version'] = '2023-06-01';
+        }
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            model:      MODEL,
+            max_tokens: 1000,
+            system:     SYSTEM_PROMPT,
+            messages:   [{ role: 'user', content: buildPrompt() }],
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || `API error ${res.status}`);
+        }
+
+        const data = await res.json();
+        if (!data.content?.[0]?.text) throw new Error('No response from AI service');
+
+        const text = data.content[0].text;
+        const get  = tag => {
+          const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
+          return m ? m[1].trim() : '';
+        };
+
+        reasoning.value = get('reasoning');
+        result.value = {
+          decision:     get('decision') || 'FURTHER_INFORMATION_NEEDED',
+          rate:         get('rate'),
+          adjustedRate: get('adjusted_rate'),
+          summary:      get('summary'),
+          obligations:  get('obligations'),
+          rights:       get('rights'),
+          timestamp:    new Date().toLocaleString('en-NZ', { dateStyle: 'long', timeStyle: 'short' }),
+          ref:          'WINZ-JS-' + Date.now().toString(36).toUpperCase().slice(-9),
+        };
+        step.value = 'result';
+
+      } catch (e) {
+        error.value = 'Could not reach the AI service: ' + e.message + '. Please check your API key and try again.';
+        step.value = 'form';
+      } finally {
+        clearInterval(stageTimer);
+        clearInterval(dotTimer);
+      }
+    }
+
+    function toggleReasoning() {
+      showReasoning.value = !showReasoning.value;
+      if (showReasoning.value && typedReasoning.value.length === 0) {
+        typeOut();
+      }
+    }
+
+    function typeOut() {
+      const text = reasoning.value;
+      let i = 0;
+      isTyping.value = true;
+      typedReasoning.value = '';
+      const id = setInterval(() => {
+        if (i < text.length) {
+          typedReasoning.value += text[i++];
+          // Auto-scroll the reasoning box
+          const box = document.querySelector('.reasoning-inner');
+          if (box) box.scrollTop = box.scrollHeight;
+        } else {
+          clearInterval(id);
+          isTyping.value = false;
+        }
+      }, 6); // 6ms per character ≈ ~167 chars/sec
+    }
+
+    function reset() {
+      step.value = 'form';
+      result.value = null;
+      reasoning.value = '';
+      typedReasoning.value = '';
+      showReasoning.value = false;
+      showObligations.value = false;
+      error.value = '';
+      // Scroll back to form
+      document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    return {
+      step, error, result, form, reasoning, typedReasoning, isTyping,
+      showReasoning, showObligations, stageIndex, dots, stages,
+      incomeSources, baseRate, decisionLabel,
+      residencyLabel, relationshipLabel, employmentLabel, studyLabel,
+      isHealthSituation,
+      toggleSource, submit, toggleReasoning, reset,
+    };
+  },
+}).mount('#demo-app');
+
+
+/* ================================================================
+   VANILLA JS — Nav scroll behaviour
+================================================================ */
+(function () {
+  // Smooth highlight active nav section
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+
+  function onScroll() {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 100) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? '#fff' : '';
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
+</script>
+
+</body>
+</html>
