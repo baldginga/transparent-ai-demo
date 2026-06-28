@@ -1,11 +1,7 @@
 /**
  * api/assess.js — Vercel serverless function using Google Gemini (free tier)
- *
- * Environment variables to set in Vercel dashboard → Settings → Environment Variables:
- * GEMINI_API_KEY   (get free at https://aistudio.google.com/apikey)
  */
 
-// Tell Vercel this function can run for up to 30 seconds
 export const maxDuration = 30;
 
 const GEMINI_MODEL   = 'gemini-2.5-flash';
@@ -65,12 +61,8 @@ CONCLUSION: ...
 <obligations>Key obligations if approved (2-4 bullet points), or N/A if declined</obligations>
 <rights>Numbered steps to challenge this decision. Include the Review of Decision URL.</rights>`;
 
-// Helper function to pause execution
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-/**
- * Wraps an asynchronous operation with retry logic for 429 rate limits
- */
 async function retryWithBackoff(apiCall, maxRetries = 4) {
   let attempt = 0;
   while (attempt < maxRetries) {
@@ -78,16 +70,10 @@ async function retryWithBackoff(apiCall, maxRetries = 4) {
       return await apiCall();
     } catch (error) {
       attempt++;
-      
-      const isRateLimit = 
-        error.status === 429 || 
-        error.statusCode === 429 || 
-        error.message?.includes('429') ||
-        error.message?.includes('RESOURCE_EXHAUSTED');
-
+      const isRateLimit = error.status === 429 || error.statusCode === 429 || error.message?.includes('429') || error.message?.includes('RESOURCE_EXHAUSTED');
       if (isRateLimit && attempt < maxRetries) {
         const waitTime = Math.pow(2.5, attempt) * 1500 + Math.random() * 1000;
-        console.warn(`[Gemini 429 Rate Limit] Attempt ${attempt} failed. Retrying in ${Math.round(waitTime)}ms...`);
+        console.warn(`[Gemini 429] Retrying in ${Math.round(waitTime)}ms...`);
         await delay(waitTime);
       } else {
         throw error;
@@ -97,157 +83,60 @@ async function retryWithBackoff(apiCall, maxRetries = 4) {
 }
 
 export default async function handler(req, res) {
-  // ── CORS headers ──────────────────────────────────────────────────────────
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // ── Parse body ────────────────────────────────────────────────────────────
   let body;
   try {
-    if (req.body && typeof req.body === 'object') {
-      body = req.body;
-    } else if (req.body && typeof req.body === 'string') {
-      body = JSON.parse(req.body);
-    } else {
-      const chunks = [];
-      for await (const chunk of req) {
-        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-      }
-      body = JSON.parse(Buffer.concat(chunks).toString());
-    }
-  } catch (parseError) {
-    console.error('Body parse error:', parseError.message);
-    return res.status(400).json({ error: 'Could not parse request body as JSON' });
+    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  } catch (e) {
+    return res.status(400).json({ error: 'Invalid JSON body' });
   }
 
-  // ── Validate ──────────────────────────────────────────────────────────────
-  if (!body?.messages?.length) {
-    return res.status(400).json({ error: 'messages array is required' });
+  const userMessage = body?.messages?.[body?.messages?.length - 1]?.content;
+  if (!userMessage || userMessage.length > MAX_BODY_CHARS) {
+    return res.status(400).json({ error: 'Invalid or over-length content payload.' });
   }
 
-  const userMessage = body.messages[body.messages.length - 1]?.content;
-  if (typeof userMessage !== 'string') {
-    return res.status(400).json({ error: 'Last message must have string content' });
-  }
-  if (userMessage.length > MAX_BODY_CHARS) {
-    return res.status(400).json({ error: 'Message content is too long' });
-  }
-
-  // ── Check API key ─────────────────────────────────────────────────────────
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error('GEMINI_API_KEY environment variable is not set');
-    return res.status(500).json({
-      error: 'Server configuration error: GEMINI_API_KEY is not set. Add it in Vercel → Settings → Environment Variables.'
-    });
-  }
+  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel configuration.' });
 
-  // ── Call Gemini ───────────────────────────────────────────────────────────
   try {
-    console.log('Calling Gemini API, message length:', userMessage.length);
-
     const geminiPayload = {
-      systemInstruction: {
-        parts: [{ text: SYSTEM_PROMPT }]
-      },
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: userMessage }]
-        }
-      ],
-      generationConfig: {
-        maxOutputTokens: 2500, // Bumped from 1500 to ensure full response tag closure
-        temperature:     0.2,
-      }
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      generationConfig: { maxOutputTokens: 2500, temperature: 0.2 }
     };
 
     const geminiData = await retryWithBackoff(async () => {
       const upstream = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(geminiPayload),
+        body: JSON.stringify(geminiPayload),
       });
-
       const data = await upstream.json();
-
       if (!upstream.ok) {
-        const errMsg = data?.error?.message || `Gemini API error (${upstream.status})`;
-        const errObj = new Error(errMsg);
+        const errObj = new Error(data?.error?.message || 'Gemini error');
         errObj.status = upstream.status;
-        errObj.statusCode = upstream.status;
         throw errObj;
       }
-
       return data;
     }, 4);
 
     const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) return res.status(502).json({ error: 'No content returned from Gemini.' });
 
-    if (!text) {
-      console.error('Gemini response had no text content:', JSON.stringify(geminiData));
-      return res.status(502).json({ error: 'No content returned from AI service' });
-    }
-
-    // Safe regex extraction that handles missing or cut-off tags without crashing
-    let decisionValue = 'unparseable';
-    try {
-      const decMatch = text.match(/<decision>([\s\S]*?)<\/decision>/);
-      if (decMatch && decMatch[1]) {
-        decisionValue = decMatch[1].trim();
-      }
-    } catch (e) {
-      console.warn('Failed to parse decision tag safely:', e.message);
-    }
-
-    console.log(JSON.stringify({
-      ts:       new Date().toISOString(),
-      event:    'assess_complete',
-      provider: 'gemini',
-      model:    GEMINI_MODEL,
-      decision: decisionValue,
-    }));
-
-// Return in the EXACT Anthropic structure so your frontend index.html parser works seamlessly
-    return res.status(200).json({
-      id: `gemini-${Date.now()}`,
-      type: "message",
-      role: "assistant",
-      model: GEMINI_MODEL,
-      content: [
-        {
-          type: "text",
-          text: text
-        }
-      ],
-      stop_reason: "end_turn",
-      stop_sequence: null,
-      usage: {
-        input_tokens: 0,
-        output_tokens: 0
-      }
-    });
+    // Send back a clean, native JSON block containing the generated text
+    return res.status(200).json({ text });
 
   } catch (err) {
-    console.error('Unhandled error in assess function:', err.message, err.stack);
-    
-    if (err.status === 429 || err.statusCode === 429) {
-      return res.status(429).json({
-        error: 'The AI service is temporarily busy. Please try clicking submit again in a few seconds.'
-      });
-    }
-
-    return res.status(502).json({
-      error: 'Could not reach the AI service. Please try again in a moment.'
+    console.error('Assess handler failed:', err);
+    return res.status(err.status === 429 ? 429 : 502).json({
+      error: 'The AI engine is temporarily busy. Please try clicking submit again.'
     });
   }
 }
