@@ -217,10 +217,24 @@ export default async function handler(req, res) {
       decision: decisionValue,
     }));
 
-    // Return payload to matches the frontend expectations
+// Return in the EXACT Anthropic structure so your frontend index.html parser works seamlessly
     return res.status(200).json({
-      content: [{ type: 'text', text }],
-      model:   GEMINI_MODEL,
+      id: `gemini-${Date.now()}`,
+      type: "message",
+      role: "assistant",
+      model: GEMINI_MODEL,
+      content: [
+        {
+          type: "text",
+          text: text
+        }
+      ],
+      stop_reason: "end_turn",
+      stop_sequence: null,
+      usage: {
+        input_tokens: 0,
+        output_tokens: 0
+      }
     });
 
   } catch (err) {
