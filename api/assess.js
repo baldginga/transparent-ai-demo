@@ -6,7 +6,6 @@
  */
 
 // Tell Vercel this function can run for up to 30 seconds
-// (default is 10s on the free plan, which can time out waiting for the AI)
 export const maxDuration = 30;
 
 const GEMINI_MODEL   = 'gemini-2.5-flash';
@@ -70,7 +69,7 @@ CONCLUSION: ...
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Wraps an asynchronous operation with retry logic specifically tuned for Gemini 429 limits
+ * Wraps an asynchronous operation with retry logic for 429 rate limits
  */
 async function retryWithBackoff(apiCall, maxRetries = 4) {
   let attempt = 0;
@@ -80,15 +79,13 @@ async function retryWithBackoff(apiCall, maxRetries = 4) {
     } catch (error) {
       attempt++;
       
-      // Robust detection across stringified errors, status numbers, and deep response data
       const isRateLimit = 
         error.status === 429 || 
         error.statusCode === 429 || 
-        error.message?.includes('429') || 
+        error.message?.includes('429') ||
         error.message?.includes('RESOURCE_EXHAUSTED');
 
       if (isRateLimit && attempt < maxRetries) {
-        // Broaden base delay to give the 15 RPM window breathing room + random jitter
         const waitTime = Math.pow(2.5, attempt) * 1500 + Math.random() * 1000;
         console.warn(`[Gemini 429 Rate Limit] Attempt ${attempt} failed. Retrying in ${Math.round(waitTime)}ms...`);
         await delay(waitTime);
@@ -169,7 +166,7 @@ export default async function handler(req, res) {
         }
       ],
       generationConfig: {
-        maxOutputTokens: 1500,
+        maxOutputTokens: 2500, // Bumped from 1500 to ensure full response tag closure
         temperature:     0.2,
       }
     };
@@ -186,17 +183,14 @@ export default async function handler(req, res) {
       if (!upstream.ok) {
         const errMsg = data?.error?.message || `Gemini API error (${upstream.status})`;
         const errObj = new Error(errMsg);
-        // Explicitly attach statuses to the error object so the retry handler captures it
-        errObj.status = upstream.status; 
+        errObj.status = upstream.status;
         errObj.statusCode = upstream.status;
-        errObj.responseData = data;
         throw errObj;
       }
 
       return data;
     }, 4);
 
-    // Extract the text from Gemini's response structure
     const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!text) {
@@ -204,16 +198,26 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'No content returned from AI service' });
     }
 
-    // Log the decision for audit purposes
-    const decMatch = text.match(/<decision>([\s\S]*?)<\/decision>/);
+    // Safe regex extraction that handles missing or cut-off tags without crashing
+    let decisionValue = 'unparseable';
+    try {
+      const decMatch = text.match(/<decision>([\s\S]*?)<\/decision>/);
+      if (decMatch && decMatch[1]) {
+        decisionValue = decMatch[1].trim();
+      }
+    } catch (e) {
+      console.warn('Failed to parse decision tag safely:', e.message);
+    }
+
     console.log(JSON.stringify({
       ts:       new Date().toISOString(),
       event:    'assess_complete',
       provider: 'gemini',
       model:    GEMINI_MODEL,
-      decision: decMatch?.[1]?.trim() || 'unparseable',
+      decision: decisionValue,
     }));
 
+    // Return payload to matches the frontend expectations
     return res.status(200).json({
       content: [{ type: 'text', text }],
       model:   GEMINI_MODEL,
@@ -222,10 +226,9 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Unhandled error in assess function:', err.message, err.stack);
     
-    // Explicitly handle fallback if retries are entirely exhausted
-    if (err.status === 429 || err.statusCode === 429 || err.message?.includes('429')) {
+    if (err.status === 429 || err.statusCode === 429) {
       return res.status(429).json({
-        error: 'The AI service is currently experiencing heavy volume. Please wait a few seconds and try again.'
+        error: 'The AI service is temporarily busy. Please try clicking submit again in a few seconds.'
       });
     }
 
