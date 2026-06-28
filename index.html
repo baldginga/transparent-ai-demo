@@ -9,12 +9,10 @@
   <meta property="og:description" content="What if benefit decisions showed their reasoning? Try a live NZ Jobseeker Support application assessed by AI, with a full audit trail you can challenge.">
   <meta property="og:type" content="website">
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-  <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.31.0/fonts/tabler-icons.min.css">
 
   <style>
@@ -548,9 +546,6 @@
 
 <body>
 
-<!-- ============================================================
-     NAV
-============================================================ -->
 <nav>
   <div class="nav-inner">
     <a href="#" class="nav-logo">
@@ -568,9 +563,6 @@
 </nav>
 
 
-<!-- ============================================================
-     HERO
-============================================================ -->
 <section id="hero">
   <div class="container">
     <div class="hero-eyebrow">
@@ -639,9 +631,6 @@ Status: FINAL — no appeal<br>
 </section>
 
 
-<!-- ============================================================
-     THE CASE
-============================================================ -->
 <section id="about">
   <div class="container">
     <div class="eyebrow">The problem</div>
@@ -705,9 +694,6 @@ Status: FINAL — no appeal<br>
 </section>
 
 
-<!-- ============================================================
-     DEMO (Vue app)
-============================================================ -->
 <section id="demo">
   <div class="container-demo">
 
@@ -719,19 +705,13 @@ Status: FINAL — no appeal<br>
       to challenge clearly stated. Rates are from <strong>1 April 2026</strong>.
     </p>
 
-    <!-- Shown if API key not set -->
     <div class="api-warning" id="api-warning">
       <i class="ti ti-key" style="font-size:15px;vertical-align:-2px;margin-right:7px"></i>
-      <strong>API key required:</strong> Open <code>index.html</code>, find <code>ANTHROPIC_API_KEY</code>
-      near the bottom and replace <code>'YOUR_ANTHROPIC_API_KEY'</code> with your key from
-      <a href="https://console.anthropic.com" target="_blank" style="color:var(--amber);font-weight:500">console.anthropic.com</a>.
-      For production, proxy calls through a backend to keep the key private.
+      <strong>API key required:</strong> Ensure <code>GEMINI_API_KEY</code> is correctly set inside your server dashboard configuration variables.
     </div>
 
-    <!-- Vue app root -->
     <div id="demo-app" v-cloak>
 
-      <!-- =========== FORM =========== -->
       <template v-if="step === 'form'">
 
         <div v-if="error" class="error-msg">
@@ -739,7 +719,6 @@ Status: FINAL — no appeal<br>
           {{ error }}
         </div>
 
-        <!-- About you -->
         <div class="f-card">
           <div class="f-section">About you</div>
 
@@ -789,7 +768,6 @@ Status: FINAL — no appeal<br>
           </div>
         </div>
 
-        <!-- Employment situation -->
         <div class="f-card">
           <div class="f-section">Your employment situation</div>
 
@@ -839,7 +817,6 @@ Status: FINAL — no appeal<br>
           </div>
         </div>
 
-        <!-- Income -->
         <div class="f-card">
           <div class="f-section">Income</div>
           <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:.9rem">
@@ -859,7 +836,6 @@ Status: FINAL — no appeal<br>
             </div>
           </div>
 
-          <!-- Live abatement preview -->
           <div v-if="form.income > 0" class="calc-preview">
             <template v-if="form.income <= 160">
               Income ${{ form.income }}/wk ≤ $160 income-free amount
@@ -892,7 +868,6 @@ Status: FINAL — no appeal<br>
           </div>
         </div>
 
-        <!-- Assets -->
         <div class="f-card">
           <div class="f-section">Savings &amp; assets</div>
 
@@ -916,7 +891,6 @@ Status: FINAL — no appeal<br>
           </div>
         </div>
 
-        <!-- Additional -->
         <div class="f-card">
           <div class="f-section">Additional information</div>
           <div class="field">
@@ -938,7 +912,6 @@ Status: FINAL — no appeal<br>
       </template>
 
 
-      <!-- =========== PROCESSING =========== -->
       <template v-else-if="step === 'processing'">
         <div class="processing">
           <div class="spinner"></div>
@@ -963,12 +936,10 @@ Status: FINAL — no appeal<br>
       </template>
 
 
-      <!-- =========== RESULT / RECEIPT =========== -->
       <template v-else-if="step === 'result' && result">
 
         <div class="receipt">
 
-          <!-- Receipt header -->
           <div class="receipt-head">
             <div>
               <div class="meta-label">Reference number</div>
@@ -982,14 +953,12 @@ Status: FINAL — no appeal<br>
 
           <div class="receipt-body">
 
-            <!-- Claim type -->
             <div class="mb-md">
               <div class="meta-label">Claim type</div>
               <div style="font-size:14px;font-weight:500;margin-top:3px">Jobseeker Support — Work and Income New Zealand (MSD)</div>
               <div style="font-size:12px;color:var(--ink-3);margin-top:2px">Rates from 1 April 2026 · Social Security Act 2018</div>
             </div>
 
-            <!-- Decision badge -->
             <div class="mb-sm">
               <div class="meta-label">Decision</div>
               <div
@@ -1009,7 +978,6 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-            <!-- Rate -->
             <div v-if="result.decision === 'APPROVED' && result.rate" class="rate-block mb-lg">
               <div class="meta-label">Estimated weekly payment</div>
               <div class="rate-num">{{ result.adjustedRate || result.rate }}</div>
@@ -1022,13 +990,11 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-            <!-- Summary -->
             <div v-if="result.summary" class="summary-block mb-lg">
               <div class="meta-label">Summary</div>
               <p class="summary-text" style="margin-top:5px">{{ result.summary }}</p>
             </div>
 
-            <!-- Details assessed -->
             <div class="mb-lg">
               <div class="meta-label">Information assessed in this decision</div>
               <table class="details-table" style="margin-top:6px">
@@ -1051,7 +1017,6 @@ Status: FINAL — no appeal<br>
               </table>
             </div>
 
-            <!-- Obligations (if approved) -->
             <div v-if="result.decision === 'APPROVED' && result.obligations" class="mb-md">
               <button class="reasoning-toggle" @click="showObligations = !showObligations">
                 <i :class="showObligations ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:13px"></i>
@@ -1066,7 +1031,6 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-            <!-- Reasoning audit trail -->
             <div class="mb-md">
               <button class="reasoning-toggle" @click="toggleReasoning">
                 <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:13px"></i>
@@ -1080,7 +1044,6 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-            <!-- Challenge rights -->
             <div v-if="result.rights">
               <div class="meta-label">Your right to challenge this decision</div>
               <div class="rights-box" style="margin-top:6px">
@@ -1098,11 +1061,7 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-          </div><!-- /receipt-body -->
-        </div><!-- /receipt -->
-
-        <!-- Actions -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem">
+          </div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem">
           <button @click="reset" class="btn-ghost">
             <i class="ti ti-arrow-left" style="font-size:14px"></i>
             Start a new application
@@ -1123,14 +1082,9 @@ Status: FINAL — no appeal<br>
 
       </template>
 
-    </div><!-- /demo-app -->
-  </div><!-- /container-demo -->
-</section>
+    </div></div></section>
 
 
-<!-- ============================================================
-     HOW IT WORKS
-============================================================ -->
 <section id="how">
   <div class="container">
     <div class="eyebrow">The mechanism</div>
@@ -1200,9 +1154,6 @@ Status: FINAL — no appeal<br>
 </section>
 
 
-<!-- ============================================================
-     SOURCES & CITATIONS
-============================================================ -->
 <section id="cite">
   <div class="container">
     <div class="eyebrow">Sources</div>
@@ -1272,9 +1223,6 @@ Status: FINAL — no appeal<br>
 </section>
 
 
-<!-- ============================================================
-     FOOTER
-============================================================ -->
 <footer>
   <div class="footer-inner">
     <div class="footer-top">
@@ -1317,7 +1265,7 @@ Status: FINAL — no appeal<br>
           <li><a href="https://robodebt.royalcommission.gov.au" target="_blank">Robodebt Royal Commission</a></li>
           <li><a href="https://www.postofficetrial.com" target="_blank">Post Office Horizon inquiry</a></li>
           <li><a href="https://www.legislation.govt.nz/act/public/2018/0032/latest/whole.html" target="_blank">Social Security Act 2018</a></li>
-          <li><a href="https://www.anthropic.com" target="_blank">Anthropic (Claude API)</a></li>
+          <li><a href="https://aistudio.google.com" target="_blank">Google Gemini AI</a></li>
         </ul>
       </div>
 
@@ -1328,126 +1276,16 @@ Status: FINAL — no appeal<br>
       This is not a real Work and Income NZ system and assessments are not legally binding.
       For actual benefit applications, visit <a href="https://my.msd.govt.nz" target="_blank" style="color:#6892C4">my.msd.govt.nz</a>
       or call Work and Income on <strong style="color:#8892A4">0800 559 009</strong>.
-      Payment rates sourced from workandincome.govt.nz (1 April 2026). Built using the Anthropic Claude API.
+      Payment rates sourced from workandincome.govt.nz (1 April 2026). Built using Google Gemini.
     </div>
   </div>
 </footer>
 
 
-<!-- ============================================================
-     SCRIPTS
-============================================================ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.prod.min.js"></script>
 
 <script>
-/*
- * ================================================================
- *  CONFIGURATION
- * ================================================================
- *
- *  OPTION 1 — Direct API call (development / demo only)
- *  Replace with your key from https://console.anthropic.com
- *  ⚠️ Never expose a real API key in production frontend code.
- *
- *  OPTION 2 — Backend proxy (recommended for production)
- *  Set PROXY_URL to your server endpoint, leave ANTHROPIC_API_KEY empty.
- *  Your server receives the request and adds the API key server-side.
- *
- * ================================================================
- */
-/*
- * The site routes all AI calls through the backend proxy at /api/assess.
- * The server reads ANTHROPIC_API_KEY from its environment — the key never
- * reaches the browser.
- *
- * For local testing without a server you can temporarily set
- * ANTHROPIC_API_KEY to your key and clear PROXY_URL, but never
- * deploy a real key in frontend code.
- */
-const ANTHROPIC_API_KEY = '';           // leave empty — use proxy in production
-const PROXY_URL         = '/api/assess'; // handled by server.js
-const MODEL             = 'claude-sonnet-4-6';
-
-if (!PROXY_URL && !ANTHROPIC_API_KEY) {
-  document.getElementById('api-warning').style.display = 'block';
-}
-
-/* ================================================================
-   SYSTEM PROMPT — Official NZ Jobseeker Support rules
-   Sources: workandincome.govt.nz (verified June 2026)
-================================================================ */
-const SYSTEM_PROMPT = `You are an AI decision-maker assessing NZ Jobseeker Support eligibility.
-Your role is to demonstrate transparent AI governance: every step of your reasoning must be explicit,
-stated in plain English, and challengeable by the applicant.
-
-OFFICIAL RATES (from 1 April 2026 — Annual General Adjustment):
-Source: workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html
-- Single 18–24, no children:          approx $348/week gross
-- Single 25+, no children:            $372.55/week gross
-- Single (any age) with dependants:   approx $430/week gross (higher rate applies)
-- Partnered (each, if both eligible): approx $313/week gross each
-- Winter Energy Payment (automatic, May–Oct): $20.46/wk single · $31.82/wk with dependants
-
-INCOME ABATEMENT RULES (workandincome.govt.nz — income deduction tables):
-- Income-free amount: $160/week gross (before tax)
-- SINGLE: benefit reduces by $0.70 per $1 earned above $160/week
-  Formula: Reduction = (gross weekly income − $160) × 0.70
-  Adjusted benefit = base rate − reduction
-- COUPLE (both eligible for benefit in own right): each benefit reduces by $0.35 per $1 of
-  COMBINED income above $160/week
-  Formula: Reduction each = (combined gross income − $160) × 0.35
-- COUPLE (only one eligible): use single abatement rules on applicant income only
-- Gross income cut-out point (approx): ~$690/wk single 25+, varies with dependants
-
-ELIGIBILITY CRITERIA (Social Security Act 2018):
-1. AGE: Must be 18 or over. Exception: 16–17 if has dependent children or approved by MSD.
-2. RESIDENCY: Must be NZ citizen, permanent resident, or hold an approved visa with work rights.
-   Must be ordinarily resident in NZ at time of application.
-3. EMPLOYMENT SITUATION: Must NOT be in full-time employment (30+ hrs/week). OR: has a
-   health condition, injury, or disability reducing capacity to work — even if still employed.
-4. WORK TEST: Must be available for and actively seeking full-time work — UNLESS:
-   - Medically certified as unable to work
-   - Caring for a severely disabled person
-   - Granted an exemption by MSD
-5. STUDY: Cannot be in full-time study (30+ hrs/week). Exceptions: approved employment
-   training or retraining courses arranged through Work and Income.
-6. INCOME TEST: Combined gross income must be below the weekly cut-out point.
-
-OBLIGATIONS once receiving Jobseeker Support:
-- Actively seek work and attend Work and Income appointments
-- Declare ALL income to Work and Income weekly
-- Notify MSD of any change in circumstances (relationship, income, address, work)
-- Reapply every 26 weeks (changed from 52 weeks as of 1 July 2025)
-- If health condition: provide medical certificate and renew before expiry
-
-REVIEW AND CHALLENGE PROCESS:
-- Applicants can request a Review of Decision within 3 months of the decision
-- Review page: workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html
-- Can escalate to Social Security Appeal Authority (independent tribunal)
-- Free help: Citizens Advice Bureau, Community Law Centres, Beneficiary Advisory Services
-- Call 0800 559 009 to initiate a review
-
-RESPONSE FORMAT — use EXACTLY these XML tags, nothing outside them:
-
-<reasoning>
-Work through every criterion numbered and explicitly. Show income calculations with actual numbers.
-State exactly what you are inferring, what evidence supports it, and what you are uncertain about.
-1. AGE: ...
-2. RESIDENCY: ...
-3. EMPLOYMENT SITUATION: ...
-4. WORK TEST: ...
-5. STUDY STATUS: ...
-6. INCOME TEST (show formula with numbers): ...
-ADDITIONAL ENTITLEMENTS TO NOTE: ...
-CONCLUSION: ...
-</reasoning>
-<decision>APPROVED or DECLINED or FURTHER_INFORMATION_NEEDED</decision>
-<rate>estimated weekly gross NZD (prefix with "estimated ") or N/A</rate>
-<adjusted_rate>weekly rate after income abatement if income above $160, otherwise same as rate</adjusted_rate>
-<summary>3 plain-English sentences for the applicant. If approved, mention Winter Energy Payment.</summary>
-<obligations>Key obligations if approved (2–4 bullet points), or N/A if declined</obligations>
-<rights>Numbered steps to challenge or review this decision. Include the exact URL for the Review of Decision page.</rights>`;
-
+const PROXY_URL = '/api/assess'; // handled by Vercel serverless function (api/assess.js)
 
 /* ================================================================
    VUE APPLICATION
@@ -1617,11 +1455,6 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
       if (!validate()) return;
       error.value = '';
 
-      if (ANTHROPIC_API_KEY === 'YOUR_ANTHROPIC_API_KEY' && !PROXY_URL) {
-        error.value = 'API key not configured. See the setup instructions above.';
-        return;
-      }
-
       step.value = 'processing';
       stageIndex.value = 0;
 
@@ -1634,37 +1467,26 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
       }, 500);
 
       try {
-        const usingProxy = !!PROXY_URL;
-        const url     = usingProxy ? PROXY_URL : 'https://api.anthropic.com/v1/messages';
-        const headers = { 'Content-Type': 'application/json' };
-
-        // When calling the Anthropic API directly from the browser (dev only)
-        if (!usingProxy && ANTHROPIC_API_KEY) {
-          headers['x-api-key']         = ANTHROPIC_API_KEY;
-          headers['anthropic-version'] = '2023-06-01';
-        }
-
-        const res = await fetch(url, {
+        const res = await fetch(PROXY_URL, {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model:      MODEL,
-            max_tokens: 1000,
-            system:     SYSTEM_PROMPT,
-            messages:   [{ role: 'user', content: buildPrompt() }],
+            messages: [{ role: 'user', content: buildPrompt() }],
           }),
         });
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.error?.message || `API error ${res.status}`);
+          throw new Error(err.error || `API Error Status (${res.status})`);
         }
 
         const data = await res.json();
-        if (!data.content?.[0]?.text) throw new Error('No response from AI service');
+        
+        // ── Gemini-Native Property Capture ───────────────────────
+        if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
+        const text = data.text;
 
-        const text = data.content[0].text;
-        const get  = tag => {
+        const get = tag => {
           const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
           return m ? m[1].trim() : '';
         };
@@ -1683,9 +1505,9 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
         step.value = 'result';
 
       } catch (e) {
-        error.value = 'Could not reach the AI service: ' + e.message + '. Please check your API key and try again.';
+        error.value = 'Assessment engine error: ' + e.message + '. Please check your configuration and try again.';
         step.value = 'form';
-      } finally {
+      } fileZone: {
         clearInterval(stageTimer);
         clearInterval(dotTimer);
       }
@@ -1706,14 +1528,13 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
       const id = setInterval(() => {
         if (i < text.length) {
           typedReasoning.value += text[i++];
-          // Auto-scroll the reasoning box
           const box = document.querySelector('.reasoning-inner');
           if (box) box.scrollTop = box.scrollHeight;
         } else {
           clearInterval(id);
           isTyping.value = false;
         }
-      }, 6); // 6ms per character ≈ ~167 chars/sec
+      }, 6);
     }
 
     function reset() {
@@ -1724,7 +1545,6 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
       showReasoning.value = false;
       showObligations.value = false;
       error.value = '';
-      // Scroll back to form
       document.getElementById('demo').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1739,12 +1559,10 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
   },
 }).mount('#demo-app');
 
-
 /* ================================================================
    VANILLA JS — Nav scroll behaviour
 ================================================================ */
 (function () {
-  // Smooth highlight active nav section
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
 
