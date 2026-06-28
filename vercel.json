@@ -1,4 +1,7 @@
 {
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": "npm install",
   "headers": [
     {
       "source": "/(.*)",
