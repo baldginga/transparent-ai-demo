@@ -2,7 +2,7 @@
  * api/assess.js — Vercel serverless function using Google Gemini (free tier)
  *
  * Environment variables to set in Vercel dashboard → Settings → Environment Variables:
- *   GEMINI_API_KEY   (get free at https://aistudio.google.com/apikey)
+ * GEMINI_API_KEY   (get free at https://aistudio.google.com/apikey)
  */
 
 // Tell Vercel this function can run for up to 30 seconds
@@ -66,6 +66,35 @@ CONCLUSION: ...
 <obligations>Key obligations if approved (2-4 bullet points), or N/A if declined</obligations>
 <rights>Numbered steps to challenge this decision. Include the Review of Decision URL.</rights>`;
 
+// Helper function to pause execution
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Wraps an asynchronous operation with retry logic for 429 rate limits
+ */
+async function retryWithBackoff(apiCall, maxRetries = 3) {
+  let attempt = 0;
+  while (attempt < maxRetries) {
+    try {
+      return await apiCall();
+    } catch (error) {
+      attempt++;
+      
+      // Target Gemini's 429 rate limit errors
+      const isRateLimit = error.status === 429 || error.message?.includes('429');
+
+      if (isRateLimit && attempt < maxRetries) {
+        // Calculate delay: 2^attempt * 1000ms + random jitter to prevent synchronized bursts
+        const waitTime = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+        console.warn(`[Gemini 429 Rate Limit] Attempt ${attempt} failed. Retrying in ${Math.round(waitTime)}ms...`);
+        await delay(waitTime);
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
 export default async function handler(req, res) {
   // ── CORS headers ──────────────────────────────────────────────────────────
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
@@ -81,8 +110,6 @@ export default async function handler(req, res) {
   }
 
   // ── Parse body ────────────────────────────────────────────────────────────
-  // Vercel sometimes passes req.body already parsed, sometimes as a raw string.
-  // This handles both cases safely.
   let body;
   try {
     if (req.body && typeof req.body === 'object') {
@@ -90,7 +117,6 @@ export default async function handler(req, res) {
     } else if (req.body && typeof req.body === 'string') {
       body = JSON.parse(req.body);
     } else {
-      // Read the raw stream manually as a last resort
       const chunks = [];
       for await (const chunk of req) {
         chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
@@ -144,20 +170,26 @@ export default async function handler(req, res) {
       }
     };
 
-    const upstream = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(geminiPayload),
-    });
-
-    const geminiData = await upstream.json();
-
-    if (!upstream.ok) {
-      console.error('Gemini API returned error:', upstream.status, JSON.stringify(geminiData));
-      return res.status(upstream.status).json({
-        error: geminiData?.error?.message || `Gemini API error (${upstream.status})`
+    // Execute the network request wrapped inside our backoff safety logic
+    const geminiData = await retryWithBackoff(async () => {
+      const upstream = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(geminiPayload),
       });
-    }
+
+      const data = await upstream.json();
+
+      // If the upstream response failed, check if it's a rate limit or throw an error object
+      if (!upstream.ok) {
+        const errObj = new Error(data?.error?.message || `Gemini API error (${upstream.status})`);
+        errObj.status = upstream.status;
+        errObj.responseData = data;
+        throw errObj;
+      }
+
+      return data;
+    }, 4); // Retries up to 4 times before failing completely
 
     // Extract the text from Gemini's response structure
     const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -185,6 +217,14 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('Unhandled error in assess function:', err.message, err.stack);
+    
+    // Explicitly bubble up the 429 error if we exhausted our retries
+    if (err.status === 429) {
+      return res.status(429).json({
+        error: 'The AI service is currently busy. Please wait a moment and try again.'
+      });
+    }
+
     return res.status(502).json({
       error: 'Could not reach the AI service. Please try again in a moment.'
     });
