@@ -70,9 +70,9 @@ CONCLUSION: ...
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * Wraps an asynchronous operation with retry logic for 429 rate limits
+ * Wraps an asynchronous operation with retry logic specifically tuned for Gemini 429 limits
  */
-async function retryWithBackoff(apiCall, maxRetries = 3) {
+async function retryWithBackoff(apiCall, maxRetries = 4) {
   let attempt = 0;
   while (attempt < maxRetries) {
     try {
@@ -80,12 +80,16 @@ async function retryWithBackoff(apiCall, maxRetries = 3) {
     } catch (error) {
       attempt++;
       
-      // Target Gemini's 429 rate limit errors
-      const isRateLimit = error.status === 429 || error.message?.includes('429');
+      // Robust detection across stringified errors, status numbers, and deep response data
+      const isRateLimit = 
+        error.status === 429 || 
+        error.statusCode === 429 || 
+        error.message?.includes('429') || 
+        error.message?.includes('RESOURCE_EXHAUSTED');
 
       if (isRateLimit && attempt < maxRetries) {
-        // Calculate delay: 2^attempt * 1000ms + random jitter to prevent synchronized bursts
-        const waitTime = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+        // Broaden base delay to give the 15 RPM window breathing room + random jitter
+        const waitTime = Math.pow(2.5, attempt) * 1500 + Math.random() * 1000;
         console.warn(`[Gemini 429 Rate Limit] Attempt ${attempt} failed. Retrying in ${Math.round(waitTime)}ms...`);
         await delay(waitTime);
       } else {
@@ -170,7 +174,6 @@ export default async function handler(req, res) {
       }
     };
 
-    // Execute the network request wrapped inside our backoff safety logic
     const geminiData = await retryWithBackoff(async () => {
       const upstream = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
         method:  'POST',
@@ -180,16 +183,18 @@ export default async function handler(req, res) {
 
       const data = await upstream.json();
 
-      // If the upstream response failed, check if it's a rate limit or throw an error object
       if (!upstream.ok) {
-        const errObj = new Error(data?.error?.message || `Gemini API error (${upstream.status})`);
-        errObj.status = upstream.status;
+        const errMsg = data?.error?.message || `Gemini API error (${upstream.status})`;
+        const errObj = new Error(errMsg);
+        // Explicitly attach statuses to the error object so the retry handler captures it
+        errObj.status = upstream.status; 
+        errObj.statusCode = upstream.status;
         errObj.responseData = data;
         throw errObj;
       }
 
       return data;
-    }, 4); // Retries up to 4 times before failing completely
+    }, 4);
 
     // Extract the text from Gemini's response structure
     const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -209,7 +214,6 @@ export default async function handler(req, res) {
       decision: decMatch?.[1]?.trim() || 'unparseable',
     }));
 
-    // Return in the Anthropic response shape so index.html needs no changes
     return res.status(200).json({
       content: [{ type: 'text', text }],
       model:   GEMINI_MODEL,
@@ -218,10 +222,10 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Unhandled error in assess function:', err.message, err.stack);
     
-    // Explicitly bubble up the 429 error if we exhausted our retries
-    if (err.status === 429) {
+    // Explicitly handle fallback if retries are entirely exhausted
+    if (err.status === 429 || err.statusCode === 429 || err.message?.includes('429')) {
       return res.status(429).json({
-        error: 'The AI service is currently busy. Please wait a moment and try again.'
+        error: 'The AI service is currently experiencing heavy volume. Please wait a few seconds and try again.'
       });
     }
 
