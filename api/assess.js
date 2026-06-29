@@ -84,28 +84,39 @@ async function retryWithBackoff(apiCall, maxRetries = 4) {
   }
 }
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+// Edge functions receive a standard web 'Request' object, and do not use 'res'
+export default async function handler(req) {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json',
+  };
 
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+  
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders });
+  }
 
   let body;
   try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    body = await req.json();
   } catch (e) {
-    return res.status(400).json({ error: 'Invalid JSON body' });
+    return new Response(JSON.stringify({ error: 'Invalid JSON body' }), { status: 400, headers: corsHeaders });
   }
 
   const userMessage = body?.messages?.[body?.messages?.length - 1]?.content;
   if (!userMessage || userMessage.length > MAX_BODY_CHARS) {
-    return res.status(400).json({ error: 'Invalid or over-length content payload.' });
+    return new Response(JSON.stringify({ error: 'Invalid or over-length content payload.' }), { status: 400, headers: corsHeaders });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY is missing in Vercel configuration.' });
+  if (!apiKey) {
+    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY is missing in Vercel configuration.' }), { status: 500, headers: corsHeaders });
+  }
 
   try {
     const geminiPayload = {
@@ -130,15 +141,18 @@ export default async function handler(req, res) {
     }, 4);
 
     const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) return res.status(502).json({ error: 'No content returned from Gemini.' });
+    if (!text) {
+      return new Response(JSON.stringify({ error: 'No content returned from Gemini.' }), { status: 502, headers: corsHeaders });
+    }
 
-    // Send back a clean, native JSON block containing the generated text
-    return res.status(200).json({ text });
+    return new Response(JSON.stringify({ text }), { status: 200, headers: corsHeaders });
 
   } catch (err) {
     console.error('Assess handler failed:', err);
-    return res.status(err.status === 429 ? 429 : 502).json({
-      error: 'The AI engine is temporarily busy. Please try clicking submit again.'
-    });
+    const statusCode = err.status === 429 ? 429 : 502;
+    return new Response(
+      JSON.stringify({ error: 'The AI engine is temporarily busy. Please try clicking submit again.' }), 
+      { status: statusCode, headers: corsHeaders }
+    );
   }
 }
