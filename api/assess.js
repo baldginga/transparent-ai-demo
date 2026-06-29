@@ -2,7 +2,7 @@
  * api/assess.js — Vercel serverless function using Google Gemini (free tier)
  */
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const GEMINI_MODEL   = 'gemini-2.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
