@@ -404,7 +404,7 @@
     .details-table td:first-child { color: var(--ink-2); width: 48%; }
     .details-table td:last-child  { font-weight: 500; text-align: right; }
 
-    /* Reasoning audit trail */
+    /* Reasoning  */
     .reasoning-toggle {
       background: none; border: none; color: var(--blue); font-size: 13px;
       cursor: pointer; display: flex; align-items: center; gap: 6px;
@@ -577,7 +577,7 @@
     <p class="hero-p">
       When algorithms denied Robodebt claims or convicted UK Post Office subpostmasters,
       there was nothing to challenge. The internal narrative of a LLM can potentially do better — recording every inference
-      in plain language, creating an audit trail people can actually read and contest.
+      in plain language, creating an  people can actually read and contest.
 
       This website seeks to demonstrate how LLM-based automated decision making could appear in practice.
     </p>
@@ -613,7 +613,7 @@ Status: FINAL — no appeal<br>
       <div class="hc-panel hc-good">
         <div class="hc-label hc-label-good">
           <i class="ti ti-check" style="font-size:13px"></i>
-          AI with an audit trail
+          AI with an 
         </div>
         <div class="hc-code hc-code-good">
 1. AGE: 34 — criterion met.<br>
@@ -654,7 +654,7 @@ Status: FINAL — no appeal<br>
         <div class="about-title">Opaque rule engines</div>
         <div class="about-body">
           Traditional automated systems apply eligibility rules through code that people cannot
-          read. When a decision is wrong, there is no audit trail, no stated reasoning, and no
+          read. When a decision is wrong, there is no , no stated reasoning, and no
           specific point to contest. The logic is inaccessible by design.
         </div>
       </div>
@@ -1033,11 +1033,11 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-            <div class="mb-md">
-              <button class="reasoning-toggle" @click="toggleReasoning">
-                <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:13px"></i>
-                {{ showReasoning ? 'Hide' : 'Show' }} complete AI reasoning audit trail
-              </button>
+          <div class="mb-md">
+  <button class="btn btn-green" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" @click="toggleReasoning">
+    <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:14px"></i>
+    <span>{{ showReasoning ? 'Hide' : 'Show' }} complete AI reasoning audit trail</span>
+  </button>
               <div v-if="showReasoning" class="reasoning-box">
                 <div style="padding:.5rem 1.3rem;font-size:11px;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--bg)">
                   AI reasoning transcript · {{ result.timestamp }} · ref {{ result.ref }}
