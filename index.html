@@ -1033,9 +1033,9 @@ Status: FINAL — no appeal<br>
               </div>
             </div>
 
-          <div class="mb-md">
-  <button class="btn btn-green" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" @click="toggleReasoning">
-    <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:14px"></i>
+       <div class="mb-md">
+  <button class="btn-primary" style="width: 100%; justify-content: center;" @click="toggleReasoning">
+    <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
     <span>{{ showReasoning ? 'Hide' : 'Show' }} complete AI reasoning audit trail</span>
   </button>
               <div v-if="showReasoning" class="reasoning-box">
