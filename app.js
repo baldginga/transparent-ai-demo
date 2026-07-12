@@ -71,6 +71,10 @@ createApp({
       if (d === 'DECLINED') return 'Declined — not eligible at this time';
       return 'Further information needed';
     });
+     
+     const currentStage = computed(() => {
+      return stages[stageIndex.value] || '';
+    });
 
     const residencyLabel = computed(() => ({
       nz_citizen: 'NZ citizen',
