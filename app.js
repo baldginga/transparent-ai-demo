@@ -270,7 +270,7 @@ const stageTimer = setInterval(() => {
 
     return {
       step, error, result, form, reasoning, typedReasoning, isTyping,
-      showReasoning, showObligations, stageIndex, dots, stages,
+      showReasoning, showObligations, stageIndex, currentStage, dots, stages,
       incomeSources, baseRate, decisionLabel,
       residencyLabel, relationshipLabel, employmentLabel, studyLabel,
       isHealthSituation,
