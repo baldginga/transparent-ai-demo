@@ -170,60 +170,63 @@ Please assess Jobseeker Support eligibility with full transparent reasoning. Sho
 
       step.value = 'processing';
       stageIndex.value = 0;
+const stageTimer = setInterval(() => {
+      stageIndex.value = Math.min(stageIndex.value + 1, stages.length - 1);
+    }, 1800);
 
-      // Animate stages
-      const stageTimer = setInterval(() => {
-        stageIndex.value = Math.min(stageIndex.value + 1, stages.length - 1);
-      }, 1800);
-      const dotTimer = setInterval(() => {
-        dots.value = dots.value.length >= 3 ? '.' : dots.value + '.';
-      }, 500);
+    const dotTimer = setInterval(() => {
+      dots.value = dots.value.length >= 3 ? '.' : dots.value + '.';
+    }, 500);
 
-      try {
-        const res = await fetch(PROXY_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: buildPrompt() }],
-          }),
-        });
+    try {
+      const res = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'user', content: buildPrompt() }
+          ],
+        }),
+      });
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.error || `API Error Status (${res.status})`);
-        }
-
-        const data = await res.json();
-        
-        // ── Gemini-Native Property Capture ───────────────────────
-        if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
-        const text = data.text;
-
-        const get = tag => {
-          const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
-          return m ? m[1].trim() : '';
-        };
-
-        reasoning.value = get('reasoning');
-        result.value = {
-          decision:     get('decision') || 'FURTHER_INFORMATION_NEEDED',
-          rate:         get('rate'),
-          adjustedRate: get('adjusted_rate'),
-          summary:      get('summary'),
-          obligations:  get('obligations'),
-          rights:       get('rights'),
-          timestamp:    new Date().toLocaleString('en-NZ', { dateStyle: 'long', timeStyle: 'short' }),
-          ref:          'WINZ-JS-' + Date.now().toString(36).toUpperCase().slice(-9),
-        };
-        step.value = 'result';
-
-      } catch (e) {
-        error.value = 'Assessment engine error: ' + e.message + '. Please check your configuration and try again.';
-        step.value = 'form';
-      } fileZone: {
-        clearInterval(stageTimer);
-        clearInterval(dotTimer);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `API Error Status (${res.status})`);
       }
+
+      const data = await res.json();
+
+      // ── Gemini-Native Property Capture ───────────────────────
+      if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
+      
+      const text = data.text;
+      const get = tag => {
+        const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`));
+        return m ? m[1].trim() : '';
+      };
+
+      reasoning.value = get('reasoning');
+      result.value = {
+        decision: get('decision') || 'FURTHER_INFORMATION_NEEDED',
+        rate: get('rate'),
+        adjustedRate: get('adjusted_rate'),
+        summary: get('summary'),
+        obligations: get('obligations'),
+        rights: get('rights'),
+        timestamp: new Date().toLocaleString('en-NZ', { dateStyle: 'long', timeStyle: 'short' }),
+        ref: 'WINZ-JS-' + Date.now().toString(36).toUpperCase().slice(-9),
+      };
+
+      step.value = 'result';
+    } catch (e) {
+      error.value = 'Assessment engine error: ' + e.message + '. Please check your configuration and try again.';
+      step.value = 'form';
+    } fileZone: {
+      clearInterval(stageTimer);
+      clearInterval(dotTimer);
+    }
     }
 
     function toggleReasoning() {
