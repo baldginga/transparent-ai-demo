@@ -10,6 +10,12 @@ const GEMINI_MODEL   = 'gemini-2.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const MAX_BODY_CHARS = 8000;
 
+// Rate limiting — backed by Upstash Redis so counts persist across edge invocations/regions.
+// Requires UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to be set in Vercel env vars.
+const RATE_LIMIT_WINDOW_MIN = parseInt(process.env.RATE_LIMIT_WINDOW, 10) || 15;
+const RATE_LIMIT_MAX        = parseInt(process.env.RATE_LIMIT_MAX, 10) || 20;
+const RATE_LIMIT_WINDOW_SEC = RATE_LIMIT_WINDOW_MIN * 60;
+
 const SYSTEM_PROMPT = `You are an AI decision-maker assessing NZ Jobseeker Support eligibility.
 Your role is to demonstrate transparent AI governance: every step of your reasoning must be explicit,
 stated in plain English, and challengeable by the applicant.
@@ -65,6 +71,59 @@ CONCLUSION: ...
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+function getClientIp(req) {
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  if (forwardedFor) return forwardedFor.split(',')[0].trim();
+  return req.headers.get('x-real-ip') || 'unknown';
+}
+
+// Fixed-window rate limit using Upstash's REST API (INCR + EXPIRE NX in one pipeline call).
+// Fails OPEN (allows the request) if Upstash isn't configured or is unreachable, so a
+// misconfigured/down rate limiter never takes the whole demo offline — it just stops
+// enforcing the cap until Upstash is reachable again.
+async function checkRateLimit(ip) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (!url || !token) {
+    console.warn('Rate limiting not enforced: UPSTASH_REDIS_REST_URL/TOKEN not configured.');
+    return { limited: false };
+  }
+
+  try {
+    const key = `ratelimit:assess:${ip}`;
+    const res = await fetch(`${url}/pipeline`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([
+        ['INCR', key],
+        ['EXPIRE', key, RATE_LIMIT_WINDOW_SEC, 'NX'], // only set TTL on the first request in the window
+      ]),
+    });
+
+    if (!res.ok) {
+      console.error('Rate limit check failed, Upstash responded', res.status);
+      return { limited: false };
+    }
+
+    const [incrResult] = await res.json();
+    const count = incrResult?.result;
+
+    if (typeof count !== 'number') {
+      console.error('Rate limit check returned unexpected shape:', incrResult);
+      return { limited: false };
+    }
+
+    return { limited: count > RATE_LIMIT_MAX, count };
+  } catch (err) {
+    console.error('Rate limit check errored:', err);
+    return { limited: false };
+  }
+}
+
 async function retryWithBackoff(apiCall, maxRetries = 4) {
   let attempt = 0;
   while (attempt < maxRetries) {
@@ -87,7 +146,7 @@ async function retryWithBackoff(apiCall, maxRetries = 4) {
 // Edge functions receive a standard web 'Request' object, and do not use 'res'
 export default async function handler(req) {
   const corsHeaders = {
-    'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+    'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || 'https://transparent-ai-demo.vercel.app',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
@@ -99,6 +158,15 @@ export default async function handler(req) {
   
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders });
+  }
+
+  const clientIp = getClientIp(req);
+  const { limited } = await checkRateLimit(clientIp);
+  if (limited) {
+    return new Response(
+      JSON.stringify({ error: `Too many requests. Please wait a few minutes and try again.` }),
+      { status: 429, headers: { ...corsHeaders, 'Retry-After': String(RATE_LIMIT_WINDOW_SEC) } }
+    );
   }
 
   let body;
@@ -126,9 +194,12 @@ export default async function handler(req) {
     };
 
     const geminiData = await retryWithBackoff(async () => {
-      const upstream = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      const upstream = await fetch(GEMINI_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
         body: JSON.stringify(geminiPayload),
       });
       const data = await upstream.json();
