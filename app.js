@@ -227,7 +227,7 @@ const stageTimer = setInterval(() => {
     } catch (e) {
       error.value = 'Assessment engine error: ' + e.message + '. Please check your configuration and try again.';
       step.value = 'form';
-    } fileZone: {
+    } finally {
       clearInterval(stageTimer);
       clearInterval(dotTimer);
     }

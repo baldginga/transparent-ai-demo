@@ -26,21 +26,18 @@ rules and April 2026 payment rates sourced from workandincome.govt.nz.
 
 ```
 .
-├── index.html          Frontend — Vue 3, served as a static file
-├── server.js           Backend — Express proxy, serves the frontend and API route
+├── index.html          Frontend markup — Vue 3, served as a static file
+├── app.js              Frontend logic — Vue app (CDN build, no build step)
 ├── api/
-│   ├── assess.js       Serverless function for Vercel deployment
-│   └── health.js       Health check for Vercel
-├── test/
-│   └── smoke.js        Basic smoke tests (no AI calls needed)
+│   └── assess.js       Vercel Edge Function — calls Gemini, rate-limited via Upstash
 ├── package.json
-├── vercel.json         Vercel deployment config
-├── .env.example        Environment variable template
+├── vercel.json          Vercel deployment config (security headers, CSP, CORS)
 └── .gitignore
 ```
 
-The frontend never touches your Anthropic API key. All AI calls flow through
-`/api/assess` on the server, which adds the key from the environment.
+There is no separate backend server — `api/assess.js` runs as a Vercel Edge Function.
+The frontend never touches the Gemini API key. All AI calls flow through `/api/assess`,
+which reads the key from the environment.
 
 ---
 
@@ -49,151 +46,65 @@ The frontend never touches your Anthropic API key. All AI calls flow through
 ### 1. Prerequisites
 
 - Node.js 18 or newer — [nodejs.org](https://nodejs.org)
-- An Anthropic API key — [console.anthropic.com](https://console.anthropic.com)
+- The Vercel CLI — `npm i -g vercel`
+- A Google Gemini API key (free tier available) — [aistudio.google.com](https://aistudio.google.com)
+- An Upstash Redis database (free tier available) — [upstash.com](https://upstash.com), used for
+  rate limiting
 
-### 2. Install dependencies
+### 2. Set your environment variables
+
+Create a `.env` file (or use `vercel env add` per variable — see below) with:
+
+```
+GEMINI_API_KEY=...
+ALLOWED_ORIGIN=http://localhost:3000
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+```
+
+`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are required for rate limiting to
+be enforced. **If either is missing, `/api/assess` still works but silently allows unlimited
+requests** — check the function logs for a `Rate limiting not enforced` warning if you're
+unsure whether it's active. See [Configuration reference](#configuration-reference).
+
+### 3. Run locally
 
 ```bash
-npm install
+vercel dev
 ```
 
-### 3. Set your API key
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and set your key:
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-### 4. Start the server
-
-```bash
-npm start
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-For development with auto-reload:
-
-```bash
-npm run dev
-```
-
-### 5. Run smoke tests
-
-Tests validate the server endpoints without making any real AI calls:
-
-```bash
-npm test
-```
+This serves `index.html`/`app.js` as static files and runs `api/assess.js` as a local Edge
+Function, matching production behaviour. Open the URL it prints (typically
+[http://localhost:3000](http://localhost:3000)).
 
 ---
 
-## Deployment
-
-### Option A — Vercel (recommended, free tier available)
-
-Vercel handles HTTPS, edge caching, and scaling automatically.
-
-**1. Install the Vercel CLI**
+## Deployment (Vercel)
 
 ```bash
-npm i -g vercel
+npm i -g vercel     # if not already installed
+vercel               # first-time setup, links the project
 ```
 
-**2. Deploy**
+Set the required environment variables in the Vercel dashboard (Project Settings →
+Environment Variables), or via the CLI:
 
 ```bash
-vercel
+vercel env add GEMINI_API_KEY
+vercel env add ALLOWED_ORIGIN
+vercel env add UPSTASH_REDIS_REST_URL
+vercel env add UPSTASH_REDIS_REST_TOKEN
 ```
 
-Follow the prompts. Vercel will detect `vercel.json` and deploy automatically.
+Then deploy:
 
-**3. Set the API key in Vercel**
-
-```
-vercel env add ANTHROPIC_API_KEY
-```
-
-Paste your key when prompted. Then redeploy:
-
-```
+```bash
 vercel --prod
 ```
 
-**4. Set your CORS origin** (optional but recommended)
-
-In the Vercel dashboard → Project Settings → Environment Variables:
-
-```
-ALLOWED_ORIGIN = https://your-deployed-url.vercel.app
-```
-
----
-
-### Option B — Any Node.js host (Render, Railway, Fly.io, VPS)
-
-1. Copy all files to your server
-2. Set environment variables (at minimum `ANTHROPIC_API_KEY`, `NODE_ENV=production`)
-3. Run `npm install --omit=dev`
-4. Start with `npm start` or use a process manager:
-
-```bash
-# Using PM2
-npm install -g pm2
-pm2 start server.js --name transparent-ai
-pm2 save
-```
-
-5. Put Nginx or Caddy in front for HTTPS termination.
-
-**Nginx example config:**
-
-```nginx
-server {
-    server_name yourdomain.com;
-
-    location / {
-        proxy_pass         http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-        proxy_read_timeout 60s;
-    }
-
-    # Certbot manages the SSL block
-}
-```
-
-Run `certbot --nginx -d yourdomain.com` to provision a free Let's Encrypt certificate.
-
----
-
-### Option C — Docker
-
-```dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
-COPY . .
-ENV NODE_ENV=production
-EXPOSE 3000
-CMD ["node", "server.js"]
-```
-
-Build and run:
-
-```bash
-docker build -t transparent-ai .
-docker run -p 3000:3000 -e ANTHROPIC_API_KEY=sk-ant-... transparent-ai
-```
+Set `ALLOWED_ORIGIN` to your production URL (e.g. `https://your-deployed-url.vercel.app`) —
+`api/assess.js` falls back to the production origin if this isn't set, but setting it
+explicitly is recommended.
 
 ---
 
@@ -201,24 +112,28 @@ docker run -p 3000:3000 -e ANTHROPIC_API_KEY=sk-ant-... transparent-ai
 
 All settings are via environment variables.
 
-| Variable            | Default                    | Description                                    |
-|---------------------|----------------------------|------------------------------------------------|
-| `ANTHROPIC_API_KEY` | *(required)*               | Your key from console.anthropic.com            |
-| `PORT`              | `3000`                     | Server port                                    |
-| `ALLOWED_ORIGIN`    | `http://localhost:3000`    | CORS origin — set to your production URL       |
-| `RATE_LIMIT_WINDOW` | `15`                       | Rate limit window in minutes                   |
-| `RATE_LIMIT_MAX`    | `20`                       | Max requests per IP per window (prod only)     |
-| `NODE_ENV`          | `development`              | Set to `production` on your server             |
+| Variable                   | Required | Default                                    | Description                                         |
+|-----------------------------|----------|---------------------------------------------|------------------------------------------------------|
+| `GEMINI_API_KEY`            | Yes      | *(none)*                                    | Your key from aistudio.google.com                    |
+| `ALLOWED_ORIGIN`            | No       | production origin                           | CORS origin allowed to call `/api/assess`             |
+| `UPSTASH_REDIS_REST_URL`    | For rate limiting | *(none — limiting disabled if unset)* | Upstash Redis REST endpoint                           |
+| `UPSTASH_REDIS_REST_TOKEN`  | For rate limiting | *(none — limiting disabled if unset)* | Upstash Redis REST token                              |
+| `RATE_LIMIT_WINDOW`         | No       | `15`                                        | Rate limit window, in minutes                         |
+| `RATE_LIMIT_MAX`            | No       | `20`                                        | Max requests per IP per window                        |
 
-Rate limiting is disabled in development (`NODE_ENV !== 'production'`).
+Rate limiting fails **open**: if Upstash isn't configured or is temporarily unreachable, requests
+are still allowed through rather than the whole endpoint going down. This is an intentional
+availability trade-off for a demo — it means the `UPSTASH_REDIS_REST_URL`/`TOKEN` pair should be
+double-checked in the Vercel dashboard periodically, since there's no user-facing signal if
+they're missing or expire.
 
 ---
 
 ## How the AI assessment works
 
-The browser sends the applicant's form data to `/api/assess`. The server constructs a
+The browser sends the applicant's form data to `/api/assess`. The Edge Function constructs a
 structured prompt containing the eligibility rules (from workandincome.govt.nz) and the
-applicant's answers, then calls the Anthropic API.
+applicant's answers, then calls the Google Gemini API.
 
 The model is instructed to work through each criterion explicitly and return its response
 in tagged XML:
@@ -233,9 +148,10 @@ in tagged XML:
 <rights>      numbered steps to challenge the decision               </rights>
 ```
 
-The frontend parses the XML tags and renders each section separately. The `<reasoning>`
-block is the audit trail — the typewriter-reveal makes the AI's thought process visceral
-rather than hiding it in an accordion.
+The frontend parses the XML tags and renders each section separately, using Vue's default
+text interpolation (not `v-html`), so model output is always escaped rather than rendered as
+live HTML. The `<reasoning>` block is the audit trail — the typewriter-reveal makes the AI's
+thought process visceral rather than hiding it in an accordion.
 
 ---
 
@@ -266,12 +182,19 @@ For actual benefit applications:
 
 ## Security notes
 
-- The Anthropic API key lives only in the server environment — it is never sent to or stored
-  in the browser.
-- The `/api/assess` endpoint validates all input before forwarding to the Anthropic API.
-  Oversized payloads and disallowed models are rejected with `400`.
-- Rate limiting (20 requests per 15 min per IP by default) prevents runaway costs.
-- Helmet provides standard security headers. CORS is restricted to `ALLOWED_ORIGIN`.
+- The Gemini API key lives only in the server environment — it is never sent to or stored in
+  the browser, and is sent to Gemini via the `x-goog-api-key` header rather than a URL parameter.
+- The `/api/assess` endpoint validates all input before forwarding to Gemini. Oversized payloads
+  are rejected with `400`. Only `POST` is accepted; all other methods get `405`.
+- Rate limiting (20 requests per 15 min per IP by default) is enforced via Upstash Redis,
+  keyed by client IP. See the note above on fail-open behaviour if Upstash isn't configured.
+- CORS is restricted to `ALLOWED_ORIGIN` (or the production origin if unset — never a wildcard).
+- CSP, HSTS, X-Frame-Options, and related security headers are set in `vercel.json`.
+  `script-src` includes `'unsafe-eval'`, required by Vue 3's CDN build for in-browser template
+  compilation — this is an accepted architectural trade-off of staying build-step-free, not an
+  oversight.
+- Error responses returned to the client are generic; specific failure detail (e.g.
+  misconfiguration) is logged server-side only, not exposed to the browser.
 - There is no persistent storage of applicant data. Each request is stateless.
 
 ---
@@ -280,7 +203,7 @@ For actual benefit applications:
 
 **Add more benefit types**
 
-Copy the system prompt in `index.html` (the `SYSTEM_PROMPT` constant) and adapt it for
+Copy the system prompt in `api/assess.js` (the `SYSTEM_PROMPT` constant) and adapt it for
 Sole Parent Support or Supported Living Payment. Add a selector on the form to route to
 the appropriate prompt.
 
@@ -292,21 +215,22 @@ recommended for real deployments.
 
 **Persist decision receipts**
 
-Store the audit log in a database (PostgreSQL, SQLite) so decisions can be retrieved by
-reference number. Useful for ombudsman review.
+Store the audit log in a database (e.g. Vercel Postgres, or Upstash's own Redis/KV) so
+decisions can be retrieved by reference number. Useful for ombudsman review.
 
 **Stream the reasoning**
 
-Switch to the Anthropic streaming API (`stream: true`) to show the reasoning typing out in
-real time rather than appearing after the full response completes.
+Switch to the Gemini streaming endpoint to show the reasoning typing out in real time rather
+than appearing after the full response completes.
 
 ---
 
 ## Built with
 
 - [Vue 3](https://vuejs.org) — reactive frontend (CDN, no build step)
-- [Express](https://expressjs.com) — Node.js backend proxy
-- [Anthropic Claude](https://www.anthropic.com) — `claude-sonnet-4-6`
+- [Vercel Edge Functions](https://vercel.com/docs/functions/edge-functions) — serverless API route
+- [Google Gemini](https://ai.google.dev) — `gemini-2.5-flash`
+- [Upstash Redis](https://upstash.com) — rate limiting (REST API, no SDK)
 - [Tabler Icons](https://tabler.io/icons) — icon set
 - [Google Fonts](https://fonts.google.com) — Libre Baskerville, Inter, JetBrains Mono
 
