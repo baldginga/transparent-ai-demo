@@ -183,7 +183,8 @@ export default async function handler(req) {
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'GEMINI_API_KEY is missing in Vercel configuration.' }), { status: 500, headers: corsHeaders });
+    console.error('Assess handler misconfigured: GEMINI_API_KEY is not set in the environment.');
+    return new Response(JSON.stringify({ error: 'The assessment engine is temporarily unavailable. Please try again shortly.' }), { status: 500, headers: corsHeaders });
   }
 
   try {
