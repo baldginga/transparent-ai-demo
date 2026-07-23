@@ -188,10 +188,17 @@ export default async function handler(req) {
   }
 
   try {
-    const geminiPayload = {
+ const geminiPayload = {
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      generationConfig: { maxOutputTokens: 2500, temperature: 0.2 }
+      generationConfig: { 
+        maxOutputTokens: 4000, 
+        temperature: 0.2,
+        // Disables Gemini 2.5 internal thinking tokens to preserve budget for response text
+        thinkingConfig: { 
+          thinkingBudget: 0 
+        }
+      },
     };
 
     const geminiData = await retryWithBackoff(async () => {
