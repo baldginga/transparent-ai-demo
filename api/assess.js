@@ -218,7 +218,20 @@ export default async function handler(req) {
       }
       return data;
     }, 4);
+// SERVER-SIDE LOGGING: Track token breakdown and confirm 0 thinking tokens
+    if (geminiData?.usageMetadata) {
+      console.log('[Gemini Token Usage]', {
+        promptTokenCount: geminiData.usageMetadata.promptTokenCount,
+        candidatesTokenCount: geminiData.usageMetadata.candidatesTokenCount,
+        thoughtsTokenCount: geminiData.usageMetadata.thoughtsTokenCount || 0,
+        totalTokenCount: geminiData.usageMetadata.totalTokenCount,
+      });
+    }
 
+    // Safety warning if the response ever hits the token ceiling
+    if (geminiData?.candidates?.[0]?.finishReason === 'MAX_TOKENS') {
+      console.warn('[Gemini Warning] Response was truncated due to MAX_TOKENS limit.');
+    }
     const text = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
       return new Response(JSON.stringify({ error: 'No content returned from Gemini.' }), { status: 502, headers: corsHeaders });
