@@ -20,30 +20,30 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:           #F5F4F0;
-      --bg-card:      #FFFFFF;
-      --bg-dark:      #111827;
-      --ink:          #111827;
-      --ink-2:        #596175;
-      --ink-3:        #8892A4;
-      --border:       #E0DBD5;
-      --border-dark:  #2A3547;
-      --green:        #1A6335;
-      --green-bg:     #E7F4EC;
-      --green-border: #A8D5B8;
-      --amber:        #A05C0A;
-      --amber-bg:     #FEF3E2;
-      --amber-border: #F6C87A;
-      --blue:         #1C4F8C;
-      --blue-bg:      #EAF1FA;
-      --blue-border:  #90BAE8;
-      --red:          #8B1A1A;
-      --red-bg:       #FBE9E9;
-      --red-border:   #E8A5A5;
-      --radius:       8px;
-      --radius-sm:    5px;
-      --shadow:       0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
-      --shadow-md:    0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
+      --bg:             #F5F4F0;
+      --bg-card:        #FFFFFF;
+      --bg-dark:        #111827;
+      --ink:            #111827;
+      --ink-2:          #596175;
+      --ink-3:          #8892A4;
+      --border:         #E0DBD5;
+      --border-dark:    #2A3547;
+      --green:          #1A6335;
+      --green-bg:       #E7F4EC;
+      --green-border:   #A8D5B8;
+      --amber:          #A05C0A;
+      --amber-bg:       #FEF3E2;
+      --amber-border:   #F6C87A;
+      --blue:           #1C4F8C;
+      --blue-bg:        #EAF1FA;
+      --blue-border:    #90BAE8;
+      --red:            #8B1A1A;
+      --red-bg:         #FBE9E9;
+      --red-border:     #E8A5A5;
+      --radius:         8px;
+      --radius-sm:      5px;
+      --shadow:         0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:      0 4px 12px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.04);
     }
 
     html { scroll-behavior: smooth; font-size: 16px; }
@@ -273,17 +273,6 @@
     textarea { resize: vertical; min-height: 70px; }
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-    /* Chips for checkbox groups */
-    .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    .chip {
-      font-size: 12.5px; padding: 5px 11px; border-radius: 20px; cursor: pointer;
-      border: 1px solid; transition: all .15s; user-select: none;
-      display: flex; align-items: center; gap: 5px; line-height: 1.2;
-    }
-    .chip-off { background: var(--bg); color: var(--ink-2); border-color: var(--border); }
-    .chip-off:hover { border-color: #b0a9a2; }
-    .chip-on  { background: var(--blue-bg); color: var(--blue); border-color: var(--blue-border); }
-
     /* Inline notices */
     .notice {
       border-radius: var(--radius-sm); padding: .8rem 1rem;
@@ -291,18 +280,7 @@
       display: flex; align-items: flex-start; gap: 8px;
     }
     .notice i { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .notice-blue { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue); }
     .notice-amber { background: var(--amber-bg); border: 1px solid var(--amber-border); color: #7A4A08; }
-    .notice-red { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
-
-    /* Live abatement preview */
-    .calc-preview {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px; color: var(--ink-2); line-height: 1.9;
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: .7rem .9rem;
-      margin-top: .6rem;
-    }
 
     /* Buttons */
     .btn-primary {
@@ -324,11 +302,6 @@
       cursor: pointer; transition: all .15s;
     }
     .btn-ghost:hover { background: var(--bg); }
-    .btn-link {
-      background: none; border: none; color: var(--blue); font-size: 13px;
-      cursor: pointer; font-family: 'Inter', sans-serif;
-      display: inline-flex; align-items: center; gap: 5px; padding: 0;
-    }
 
     .error-msg {
       background: var(--red-bg); border: 1px solid var(--red-border);
@@ -349,12 +322,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .proc-h { font-size: 17px; font-weight: 500; margin-bottom: .4rem; }
     .proc-sub { font-size: 13px; color: var(--ink-2); margin-bottom: 1.5rem; }
-    .proc-stages { text-align: left; max-width: 440px; margin: 0 auto; }
-    .proc-stage {
-      display: flex; align-items: center; gap: 10px;
-      padding: 5px 0; font-size: 13px; transition: opacity .4s;
-    }
-    .proc-stage i { font-size: 15px; }
 
     /* ===================== RECEIPT ===================== */
     .receipt {
@@ -376,7 +343,6 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 14px; font-weight: 500; color: var(--ink);
     }
-    .meta-val { font-size: 13px; font-weight: 500; }
     .receipt-body { padding: 1.5rem; }
 
     .dec-badge {
@@ -398,12 +364,6 @@
     .summary-block { margin-bottom: 1.25rem; }
     .summary-text { font-size: 14px; color: var(--ink-2); line-height: 1.7; }
 
-    .details-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 1.25rem; }
-    .details-table td { padding: 6px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
-    .details-table tr:last-child td { border-bottom: none; }
-    .details-table td:first-child { color: var(--ink-2); width: 48%; }
-    .details-table td:last-child  { font-weight: 500; text-align: right; }
-
     /* Reasoning  */
     .reasoning-toggle {
       background: none; border: none; color: var(--blue); font-size: 13px;
@@ -422,12 +382,6 @@
       color: var(--ink-2); white-space: pre-wrap; word-break: break-word;
       max-height: 420px; overflow-y: auto;
     }
-    .cursor {
-      display: inline-block; width: 7px; height: 13px;
-      background: var(--green); vertical-align: -2px; margin-left: 1px;
-      animation: blink .9s step-start infinite;
-    }
-    @keyframes blink { 0%,49%{ opacity:1; } 50%,100%{ opacity:0; } }
 
     .obligations-box {
       background: var(--blue-bg); border: 1px solid var(--blue-border);
@@ -441,13 +395,11 @@
       border-radius: var(--radius-sm); padding: 1rem 1.1rem;
       font-size: 13px; color: #7A4A08; line-height: 1.75;
     }
-    .rights-box a { color: var(--amber); font-weight: 500; }
 
     .disclaimer {
       font-size: 12px; color: var(--ink-3); line-height: 1.65;
       text-align: center; margin-top: 1.25rem;
     }
-    .disclaimer a { color: var(--blue); }
 
     /* ===================== HOW IT WORKS ===================== */
     #how { background: #fff; }
@@ -511,28 +463,6 @@
       font-size: 12px; color: var(--ink-3); line-height: 1.65;
     }
 
-    /* ===================== RESPONSIVE ===================== */
-    @media (max-width: 768px) {
-      nav { padding: 0 1rem; }
-      .nav-links .nav-link-item { display: none; }
-      .hero-compare { grid-template-columns: 1fr; }
-      .about-grid   { grid-template-columns: 1fr; }
-      .row2         { grid-template-columns: 1fr; }
-      .how-grid     { grid-template-columns: 1fr; gap: 1.5rem; }
-      .cite-grid    { grid-template-columns: 1fr; }
-      .footer-top   { flex-direction: column; }
-      section { padding: 64px 0; }
-      #hero { padding: 100px 0 60px; min-height: auto; }
-      .hero-h1 { letter-spacing: -.01em; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: .01ms !important;
-        transition-duration: .01ms !important;
-      }
-    }
-
     /* Utility */
     .mt-sm  { margin-top: .5rem; }
     .mt-md  { margin-top: 1rem; }
@@ -577,9 +507,7 @@
     <p class="hero-p">
       When algorithms denied Robodebt claims or convicted UK Post Office subpostmasters,
       there was nothing to challenge. The internal narrative of a LLM can potentially do better — recording every inference
-      in plain language, creating an  people can actually read and contest.
-
-      This website seeks to demonstrate how LLM-based automated decision making could appear in practice.
+      in plain language, creating an audit trail people can actually read and contest.
     </p>
 
     <div class="hero-actions">
@@ -613,7 +541,7 @@ Status: FINAL — no appeal<br>
       <div class="hc-panel hc-good">
         <div class="hc-label hc-label-good">
           <i class="ti ti-check" style="font-size:13px"></i>
-          AI with an 
+          AI with an audit trail
         </div>
         <div class="hc-code hc-code-good">
 1. AGE: 34 — criterion met.<br>
@@ -654,8 +582,8 @@ Status: FINAL — no appeal<br>
         <div class="about-title">Opaque rule engines</div>
         <div class="about-body">
           Traditional automated systems apply eligibility rules through code that people cannot
-          read. When a decision is wrong, there is no , no stated reasoning, and no
-          specific point to contest. The logic behind decisions is inaccessible by design.
+          read. When a decision is wrong, there is no log, no stated reasoning, and no
+          specific point to contest.
         </div>
       </div>
       <div class="about-card">
@@ -665,31 +593,7 @@ Status: FINAL — no appeal<br>
         <div class="about-title">AI with a paper trail</div>
         <div class="about-body">
           A language model working through an eligibility decision produces its reasoning in plain
-          English. Every inference is stated. Every uncertainty is flagged. When a decision is wrong 
-          (including any AI hallucinations), the specific erroneous step can be identified, quoted, 
-          and corrected.
-        </div>
-      </div>
-      <div class="about-card">
-        <div class="about-icon about-icon-red">
-          <i class="ti ti-door-off"></i>
-        </div>
-        <div class="about-title">No right of reply</div>
-        <div class="about-body">
-          Without a stated reason, appeal is practically impossible. people receive a decision
-          code, not an explanation. They cannot know which facts were considered, which were ignored,
-          or whether the system misunderstood their situation.
-        </div>
-      </div>
-      <div class="about-card">
-        <div class="about-icon about-icon-green">
-          <i class="ti ti-scale"></i>
-        </div>
-        <div class="about-title">Embedded challenge rights</div>
-        <div class="about-body">
-          Every AI decision receipt includes plain-English instructions for challenging the outcome —
-          links to the formal review process, support options, and escalation paths. A challenge
-          becomes possible because the reasoning is readable.
+          English. Every inference is stated. Every uncertainty is flagged.
         </div>
       </div>
     </div>
@@ -715,6 +619,7 @@ Status: FINAL — no appeal<br>
 
     <div id="demo-app" v-cloak>
 
+      <!-- FORM STEP -->
       <template v-if="step === 'form'">
 
         <div v-if="error" class="error-msg">
@@ -745,7 +650,7 @@ Status: FINAL — no appeal<br>
 
           <div v-if="form.residency === 'student_visa' || form.residency === 'visitor_visa' || form.residency === 'none'" class="notice notice-amber mt-sm">
             <i class="ti ti-info-circle"></i>
-            <span>This visa type is unlikely to qualify for Jobseeker Support. Work and Income will verify your status. If you arrived recently from overseas, eligibility may depend on your specific visa conditions.</span>
+            <span>This visa type is unlikely to qualify for Jobseeker Support. Work and Income will verify your status.</span>
           </div>
 
           <div class="row2 mt-sm">
@@ -782,378 +687,141 @@ Status: FINAL — no appeal<br>
               <option value="redundant">Recently made redundant</option>
               <option value="resigned">Resigned or left my last job</option>
               <option value="dismissed">Dismissed / let go by employer</option>
-              <option value="part_time_seeking">Working part-time and seeking more hours</option>
-              <option value="health_reduced">Health condition has reduced my hours</option>
-              <option value="health_unable">Health condition — currently unable to work</option>
-              <option value="self_employed_low">Self-employed with significantly reduced income</option>
-              <option value="employed_fulltime">Employed full-time (30+ hrs/week)</option>
+              <option value="health_condition">Health condition or disability limiting work ability</option>
+              <option value="employed_fulltime">Employed full-time (30+ hours per week)</option>
+              <option value="employed_parttime">Employed part-time (under 30 hours per week)</option>
+              <option value="student_fulltime">Full-time student</option>
             </select>
           </div>
 
-          <div v-if="form.employment === 'resigned'" class="notice notice-amber">
-            <i class="ti ti-info-circle"></i>
-            <span>If you resigned without good reason a stand-down period of up to 13 weeks may apply before payments start. Work and Income will assess your reason for leaving.</span>
-          </div>
-
-          <div v-if="form.employment === 'employed_fulltime'" class="notice notice-amber">
-            <i class="ti ti-info-circle"></i>
-            <span>People in full-time employment generally do not qualify for Jobseeker Support unless a health condition is reducing their capacity to work.</span>
-          </div>
-
-          <div v-if="isHealthSituation" class="field mt-sm">
-            <label>Describe how the condition affects your ability to work <span class="req">*</span></label>
-            <textarea v-model="form.healthDetails" rows="2" placeholder="e.g. Recovering from surgery — GP expects return to full work in 8 weeks. Medical certificate available."></textarea>
-            <p class="hint">You will need to provide a medical certificate from a registered health practitioner when you apply through MyMSD.</p>
-          </div>
-
-          <div class="field" :class="{ 'mt-sm': !isHealthSituation }">
-            <label>Are you currently studying?</label>
-            <select v-model="form.studying">
-              <option value="no">No</option>
-              <option value="fulltime">Yes — full-time study (30+ hrs/week)</option>
-              <option value="parttime">Yes — part-time study only</option>
-              <option value="approved_training">Yes — approved employment training through Work and Income</option>
-            </select>
-            <p v-if="form.studying === 'fulltime'" class="hint" style="color:var(--red)">
-              Full-time students generally cannot receive Jobseeker Support. StudyLink has separate hardship support — see <a href="https://www.studylink.govt.nz" target="_blank" style="color:var(--blue)">studylink.govt.nz</a>.
-            </p>
-          </div>
-        </div>
-
-        <div class="f-card">
-          <div class="f-section">Income</div>
-          <p style="font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:.9rem">
-            Once approved, you must declare <strong>all income weekly</strong> to Work and Income. Undeclared income
-            can result in an overpayment debt. Include all sources below.
-          </p>
-
-          <div :class="form.relationship.startsWith('partnered') ? 'row2' : ''">
+          <div class="row2 mt-sm">
             <div class="field">
-              <label>Your gross weekly income (before tax) <span class="req">*</span></label>
-              <input type="number" v-model.number="form.income" min="0" placeholder="0">
-              <p class="hint">Wages, ACC payments, child support received, any regular income.</p>
+              <label>Weekly gross income ($)</label>
+              <input type="number" v-model="form.income" min="0" placeholder="0">
             </div>
-            <div v-if="form.relationship.startsWith('partnered')" class="field">
-              <label>Partner's gross weekly income <span class="req">*</span></label>
-              <input type="number" v-model.number="form.partnerIncome" min="0" placeholder="0">
+            <div class="field">
+              <label>Partner's weekly gross income ($)</label>
+              <input type="number" v-model="form.partnerIncome" min="0" placeholder="0">
             </div>
-          </div>
-
-          <div v-if="form.income > 0" class="calc-preview">
-            <template v-if="form.income <= 160">
-              Income ${{ form.income }}/wk ≤ $160 income-free amount
-              → No abatement — full benefit rate applies
-            </template>
-            <template v-else>
-              Income ${{ form.income }}/wk exceeds $160 income-free amount
-              → Single abatement: (${{ form.income }} − $160) × 0.70 = ${{ ((form.income - 160) * 0.70).toFixed(2) }}/wk reduction
-              → Estimated adjusted benefit: ${{ Math.max(0, baseRate - ((form.income - 160) * 0.70)).toFixed(2) }}/wk
-              <template v-if="form.income > 690">
-              ⚠ Income may exceed the cut-out point — eligibility uncertain
-              </template>
-            </template>
           </div>
 
           <div class="field mt-sm">
-            <label>Other income sources (select all that apply)</label>
-            <div class="chip-group">
-              <span
-                v-for="src in incomeSources"
-                :key="src"
-                class="chip"
-                :class="form.otherIncomeSources.includes(src) ? 'chip-on' : 'chip-off'"
-                @click="toggleSource(src)"
-              >
-                <i :class="form.otherIncomeSources.includes(src) ? 'ti ti-check' : 'ti ti-plus'" style="font-size:12px"></i>
-                {{ src }}
-              </span>
-            </div>
+            <label>Additional circumstances (optional)</label>
+            <textarea v-model="form.extraInfo" placeholder="e.g. details about medical conditions, reason for leaving last job, etc."></textarea>
           </div>
         </div>
 
-        <div class="f-card">
-          <div class="f-section">Savings &amp; assets</div>
-
-          <div class="field">
-            <label>Total liquid savings and cash assets (NZD) <span class="req">*</span></label>
-            <input type="number" v-model.number="form.assets" min="0" placeholder="e.g. 1500">
-            <p class="hint">
-              Include: bank accounts, term deposits, shares, cryptocurrency, and cash savings.
-              Do <strong>not</strong> include: your main family home, one personal vehicle (up to value limits),
-              or KiwiSaver funds not yet accessible.
-            </p>
-          </div>
-
-          <div class="field">
-            <label>Do you own property other than your main home?</label>
-            <select v-model="form.otherProperty">
-              <option value="no">No</option>
-              <option value="rental">Yes — rental or investment property</option>
-              <option value="selling">Yes — currently being sold</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="f-card">
-          <div class="f-section">Additional information</div>
-          <div class="field">
-            <label>Anything else Work and Income should know? (optional)</label>
-            <textarea v-model="form.other" rows="3" placeholder="e.g. Returned to NZ last month after working overseas. Recently separated. Have caring responsibilities for an elderly parent. Previously received Jobseeker Support in 2022..."></textarea>
-          </div>
-        </div>
-
-        <button @click="submit" class="btn-primary">
-          <i class="ti ti-cpu"></i>
-          Submit for AI assessment
+        <button class="btn-primary" @click="submitForm">
+          <i class="ti ti-cpu"></i> Submit Application for AI Assessment
         </button>
-
-        <p style="font-size:12px;color:var(--ink-3);margin-top:.6rem;line-height:1.65">
-          Research demo only — not a real Work and Income application. For actual applications:
-          <a href="https://my.msd.govt.nz" target="_blank" style="color:var(--blue)">my.msd.govt.nz</a>
-          or call <strong>0800 559 009</strong>. 
-        </p>
       </template>
 
-
-      <template v-else-if="step === 'processing'">
-        <div class="processing">
+      <!-- LOADING STEP -->
+      <template v-if="step === 'loading'">
+        <div class="f-card processing">
           <div class="spinner"></div>
-          <h3 class="proc-h">Assessing your application</h3>
-          <p class="proc-sub">{{ currentStage }}{{ dots }}</p>
-          <div class="proc-stages">
-            <div
-              v-for="(stage, i) in stages"
-              :key="i"
-              class="proc-stage"
-              :style="{ opacity: i <= stageIndex ? 1 : 0.28 }"
-            >
-              <i
-                :class="i < stageIndex ? 'ti ti-circle-check' : i === stageIndex ? 'ti ti-circle-dot' : 'ti ti-circle'"
-                class="proc-icon"
-                :style="{ color: i < stageIndex ? 'var(--green)' : i === stageIndex ? 'var(--blue)' : 'var(--ink-3)' }"
-              ></i>
-              {{ stage }}
-            </div>
-          </div>
+          <div class="proc-h">AI Decision Engine at Work</div>
+          <div class="proc-sub">Evaluating eligibility criteria against Social Security Act 2018...</div>
         </div>
       </template>
 
-
-      <template v-else-if="step === 'result' && result">
-
+      <!-- RESULT RECEIPT STEP -->
+      <template v-if="step === 'result' && result">
         <div class="receipt">
-
           <div class="receipt-head">
             <div>
-              <div class="meta-label">Reference number</div>
-              <div class="meta-ref">{{ result.ref }}</div>
+              <div class="meta-label">Assessment Receipt</div>
+              <div class="meta-ref">REF-{{ Math.floor(100000 + Math.random() * 900000) }}</div>
             </div>
             <div style="text-align:right">
-              <div class="meta-label">Date issued</div>
-              <div class="meta-val">{{ result.timestamp }}</div>
+              <div class="meta-label">Date</div>
+              <div style="font-size:13px;font-weight:500">2026-07-24</div>
             </div>
           </div>
 
           <div class="receipt-body">
-
-            <div class="mb-md">
-              <div class="meta-label">Claim type</div>
-              <div style="font-size:14px;font-weight:500;margin-top:3px">Jobseeker Support — Work and Income New Zealand (MSD)</div>
-              <div style="font-size:12px;color:var(--ink-3);margin-top:2px">Rates from 1 April 2026 · Social Security Act 2018</div>
+            <!-- Decision Badge -->
+            <div v-if="result.decision === 'APPROVED'" class="dec-badge dec-approved">
+              <i class="ti ti-circle-check"></i> DECISION: APPROVED
+            </div>
+            <div v-else-if="result.decision === 'DECLINED'" class="dec-badge dec-declined">
+              <i class="ti ti-circle-x"></i> DECISION: DECLINED
+            </div>
+            <div v-else class="dec-badge dec-more">
+              <i class="ti ti-alert-circle"></i> DECISION: FURTHER INFO NEEDED
             </div>
 
-            <div class="mb-sm">
-              <div class="meta-label">Decision</div>
-              <div
-                class="dec-badge"
-                :class="{
-                  'dec-approved': result.decision === 'APPROVED',
-                  'dec-declined': result.decision === 'DECLINED',
-                  'dec-more': result.decision === 'FURTHER_INFORMATION_NEEDED'
-                }"
-              >
-                <i :class="{
-                  'ti ti-circle-check': result.decision === 'APPROVED',
-                  'ti ti-circle-x':     result.decision === 'DECLINED',
-                  'ti ti-help-circle':  result.decision === 'FURTHER_INFORMATION_NEEDED'
-                }"></i>
-                {{ decisionLabel }}
-              </div>
+            <!-- Calculated Rate Block -->
+            <div class="rate-block" v-if="result.rate || result.adjustedRate || result.adjusted_rate">
+              <div class="rate-num">{{ result.adjustedRate || result.adjusted_rate || result.rate }}</div>
+              <div class="rate-label">Calculated Weekly Benefit Entitlement</div>
             </div>
 
-            <div v-if="result.decision === 'APPROVED' && result.rate" class="rate-block mb-lg">
-              <div class="meta-label">Estimated weekly payment</div>
-              <div class="rate-num">{{ result.adjustedRate || result.rate }}</div>
-              <div class="rate-label">Gross before tax at "M" tax code · subject to formal MSD verification</div>
-              <div v-if="result.adjustedRate && result.adjustedRate !== result.rate" class="rate-sub">
-                Base rate {{ result.rate }} · reduced by income above $160/wk free zone
-              </div>
-              <div class="rate-sub" style="color:var(--green)">
-                + Winter Energy Payment ($20.46/wk) automatically added May–October
-              </div>
+            <!-- Summary -->
+            <div class="summary-block" v-if="result.summary">
+              <div class="summary-text">{{ result.summary }}</div>
             </div>
 
-            <div v-if="result.summary" class="summary-block mb-lg">
-              <div class="meta-label">Summary</div>
-              <p class="summary-text" style="margin-top:5px">{{ result.summary }}</p>
-            </div>
-
-            <div class="mb-lg">
-              <div class="meta-label">Information assessed in this decision</div>
-              <table class="details-table" style="margin-top:6px">
-                <tbody>
-                  <tr><td>Age</td><td>{{ form.age }}</td></tr>
-                  <tr><td>Citizenship / residency</td><td>{{ residencyLabel }}</td></tr>
-                  <tr><td>Relationship status</td><td>{{ relationshipLabel }}</td></tr>
-                  <tr><td>Employment situation</td><td>{{ employmentLabel }}</td></tr>
-                  <tr><td>Gross weekly income</td><td>${{ form.income }}</td></tr>
-                  <tr v-if="form.relationship.startsWith('partnered')">
-                    <td>Partner gross weekly income</td><td>${{ form.partnerIncome }}</td>
-                  </tr>
-                  <tr><td>Dependent children (under 18)</td><td>{{ form.dependents }}</td></tr>
-                  <tr><td>Liquid savings / assets</td><td>${{ form.assets }}</td></tr>
-                  <tr><td>Study status</td><td>{{ studyLabel }}</td></tr>
-                  <tr v-if="form.otherIncomeSources.length > 0">
-                    <td>Other income sources declared</td><td>{{ form.otherIncomeSources.join(', ') }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div v-if="result.decision === 'APPROVED' && result.obligations" class="mb-md">
-              <button class="reasoning-toggle" @click="showObligations = !showObligations">
-                <i :class="showObligations ? 'ti ti-chevron-up' : 'ti ti-chevron-down'" style="font-size:13px"></i>
-                {{ showObligations ? 'Hide' : 'Show' }} your obligations if approved
+            <!-- Transparent Reasoning Log -->
+            <div v-if="result.reasoning">
+              <button class="reasoning-toggle" @click="showReasoning = !showReasoning">
+                <i :class="showReasoning ? 'ti ti-chevron-down' : 'ti ti-chevron-right'"></i>
+                {{ showReasoning ? 'Hide' : 'Show' }} AI Step-by-Step Reasoning Log
               </button>
-              <div v-if="showObligations" class="obligations-box">
-                <div style="font-weight:600;margin-bottom:.4rem">
-                  <i class="ti ti-clipboard-check" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>
-                  What you must do while receiving Jobseeker Support
-                </div>
-                <div style="white-space:pre-wrap">{{ result.obligations }}</div>
+              
+              <div class="reasoning-box" v-if="showReasoning">
+                <div class="reasoning-inner">{{ result.reasoning }}</div>
               </div>
             </div>
 
-       <div class="mb-md">
-  <button class="btn-primary" style="width: 100%; justify-content: center;" @click="toggleReasoning">
-    <i :class="showReasoning ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
-    <span>{{ showReasoning ? 'Hide' : 'Show' }} complete AI reasoning audit trail</span>
-  </button>
-              <div v-if="showReasoning" class="reasoning-box">
-                <div style="padding:.5rem 1.3rem;font-size:11px;color:var(--ink-3);border-bottom:1px solid var(--border);background:var(--bg)">
-                  AI reasoning transcript · {{ result.timestamp }} · ref {{ result.ref }}
-                </div>
-                <div class="reasoning-inner">{{ typedReasoning }}<span v-if="isTyping" class="cursor"></span></div>
-              </div>
+            <!-- Obligations -->
+            <div class="obligations-box" v-if="result.obligations">
+              <strong>Applicant Obligations:</strong>
+              <div>{{ result.obligations }}</div>
             </div>
 
-            <div v-if="result.rights">
-              <div class="meta-label">Your right to challenge this decision</div>
-              <div class="rights-box" style="margin-top:6px">
-                <div style="font-weight:600;margin-bottom:.6rem">
-                  <i class="ti ti-scale" style="font-size:15px;vertical-align:-2px;margin-right:6px"></i>
-                  How to challenge or request a review
-                </div>
-                <div style="white-space:pre-wrap">{{ result.rights }}</div>
-                <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--amber-border);font-size:12px">
-                  Official review page:
-                  <a href="https://www.workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html" target="_blank">
-                    workandincome.govt.nz → Feedback and complaints → Review of a decision
-                  </a>
-                </div>
-              </div>
+            <!-- Challenge Rights -->
+            <div class="rights-box" v-if="result.rights">
+              <strong>Your Right to Challenge this Decision:</strong>
+              <div>{{ result.rights }}</div>
             </div>
-
-          </div></div><div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem">
-          <button @click="reset" class="btn-ghost">
-            <i class="ti ti-arrow-left" style="font-size:14px"></i>
-            Start a new application
-          </button>
-          <a href="https://my.msd.govt.nz" target="_blank" class="btn-ghost">
-            Apply for real at MyMSD
-            <i class="ti ti-external-link" style="font-size:13px"></i>
-          </a>
+          </div>
         </div>
 
-        <p class="disclaimer">
-          Research demonstration only — not to be relied on. Real applications at
-          <a href="https://my.msd.govt.nz" target="_blank">my.msd.govt.nz</a> or call
-          <strong>0800 559 009</strong>. Rates sourced from
-          <a href="https://www.workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html" target="_blank">workandincome.govt.nz</a>,
-          1 April 2026.
-        </p>
+        <button class="btn-ghost" @click="resetForm">
+          <i class="ti ti-refresh"></i> Start New Assessment
+        </button>
 
+        <div class="disclaimer">
+          This is a research prototype demonstrating AI explainability. Not an official Ministry of Social Development decision.
+        </div>
       </template>
 
-    </div></div></section>
+    </div>
+  </div>
+</section>
 
 
 <section id="how">
   <div class="container">
-    <div class="eyebrow">The mechanism</div>
-    <h2 class="s-h2">How transparent AI decisions work</h2>
-    <p class="s-lead">
-      The key difference from rule-based automation is not speed or accuracy — it is the production of detailed
-      and structured reasoning record that can be challenged by those affected by the decision.
-    </p>
-
+    <div class="eyebrow">How it works</div>
+    <h2 class="s-h2">Transparent Governance Architecture</h2>
+    
     <div class="how-grid">
-      <div>
+      <div class="how-card">
         <div class="how-num">1</div>
-        <div class="how-title">Structured input</div>
-        <div class="how-body">
-          The applicant provides information about their situation — age, residency, income,
-          assets, employment status. These structured inputs are passed to the AI exactly as
-          entered.
-        </div>
+        <div class="how-title">Structured Context</div>
+        <div class="how-body">Applicant inputs are processed against real-world 2026 legislation rates and abatement logic without hidden black-box calculations.</div>
       </div>
-      <div>
+      <div class="how-card">
         <div class="how-num">2</div>
-        <div class="how-title">Step-by-step reasoning</div>
-        <div class="how-body">
-          The AI applies each eligibility criterion in sequence — written out in plain English.
-          Where it must infer something (e.g. that savings are liquid), it states this explicitly.
-          Uncertainties can be detailed. If the assessment is wrong, from AI halluciantion or 
-          flawed inputs or calcualtion, the applicant can specifically point to the flawed reasoning.
-        </div>
+        <div class="how-title">Schema-Guided Generation</div>
+        <div class="how-body">Gemini is required to produce explicit, step-by-step reasoning for each condition before outputting a final decision.</div>
       </div>
-      <div>
+      <div class="how-card">
         <div class="how-num">3</div>
-        <div class="how-title">The decision receipt</div>
-        <div class="how-body">
-          A timestamped record is issued: the decision, the estimated payment, the full reasoning
-          trail, and the specific steps to challenge the outcome. The receipt can be printed,
-          shared with a support person, or quoted in a formal review.
-        </div>
-      </div>
-      <div>
-        <div class="how-num">4</div>
-        <div class="how-title">Identifying the error</div>
-        <div class="how-body">
-          If a decision is wrong, the reasoning trail tells you exactly where. The applicant
-          can point to the specific line — "you assumed my $3,000 was liquid savings but it is
-          in a term deposit" — rather than arguing against an opaque outcome.
-        </div>
-      </div>
-      <div>
-        <div class="how-num">5</div>
-        <div class="how-title">Formal challenge</div>
-        <div class="how-body">
-          The receipt can links directly to a formal review process. The reasoning 
-          record provides the material for the review — a named claim, a stated inference, 
-          and the correction. People affected by a decision get to check the workings and 
-          reasoning in plain English.
-        </div>
-      </div>
-      <div>
-        <div class="how-num">6</div>
-        <div class="how-title">Human oversight</div>
-        <div class="how-body">
-          With the AI generated plain English reasoning trail makes review of decisons possible
-          in a way that wasn't in the Robodebt or Postmaster scandals. People affected by automated 
-          decisions, and external auditors, can assess automated decisions themselves, rather than 
-          being forced to rely on assurances by those running the systems.
-        </div>
+        <div class="how-title">Auditable Receipts</div>
+        <div class="how-body">The generated receipt guarantees that every step of logic can be individually contested or overridden by human reviewers.</div>
       </div>
     </div>
   </div>
@@ -1162,67 +830,24 @@ Status: FINAL — no appeal<br>
 
 <section id="cite">
   <div class="container">
-    <div class="eyebrow">Sources</div>
-    <h2 class="s-h2">Data and eligibility rules</h2>
-    <p class="s-lead">
-      All eligibility criteria, payment rates, and application process information used in
-      this demonstration are drawn from official Work and Income New Zealand sources.
-    </p>
+    <div class="eyebrow">References</div>
+    <h2 class="s-h2">Data Sources & Legislation</h2>
 
     <div class="cite-grid">
       <div class="cite-card">
-        <div class="cite-source">workandincome.govt.nz</div>
-        <div class="cite-title">Benefit rates from 1 April 2026</div>
-        <div class="cite-url">
-          <a href="https://www.workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html" target="_blank">
-            workandincome.govt.nz/products/benefit-rates/benefit-rates-april-2026.html
-          </a>
-        </div>
+        <div class="cite-source">Legislation</div>
+        <div class="cite-title">Social Security Act 2018</div>
+        <div class="cite-url"><a href="https://www.legislation.govt.nz" target="_blank" rel="noopener">legislation.govt.nz</a></div>
       </div>
       <div class="cite-card">
-        <div class="cite-source">workandincome.govt.nz</div>
-        <div class="cite-title">Apply online — process and requirements</div>
-        <div class="cite-url">
-          <a href="https://www.workandincome.govt.nz/online-services/apply/index.html" target="_blank">
-            workandincome.govt.nz/online-services/apply/index.html
-          </a>
-        </div>
+        <div class="cite-source">Rates & Allowances</div>
+        <div class="cite-title">Work and Income Benefit Rates (1 April 2026)</div>
+        <div class="cite-url"><a href="https://www.workandincome.govt.nz" target="_blank" rel="noopener">workandincome.govt.nz</a></div>
       </div>
       <div class="cite-card">
-        <div class="cite-source">workandincome.govt.nz</div>
-        <div class="cite-title">Jobseeker Support — income deduction tables</div>
-        <div class="cite-url">
-          <a href="https://www.workandincome.govt.nz/on-a-benefit/tell-us/income/deduction-tables/jobseeker-support-single.html" target="_blank">
-            workandincome.govt.nz/on-a-benefit/tell-us/income/deduction-tables/
-          </a>
-        </div>
-      </div>
-      <div class="cite-card">
-        <div class="cite-source">workandincome.govt.nz</div>
-        <div class="cite-title">Review of a decision — challenge rights</div>
-        <div class="cite-url">
-          <a href="https://www.workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html" target="_blank">
-            workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html
-          </a>
-        </div>
-      </div>
-      <div class="cite-card">
-        <div class="cite-source">workandincome.govt.nz</div>
-        <div class="cite-title">Jobseeker Support — product page and obligations</div>
-        <div class="cite-url">
-          <a href="https://www.workandincome.govt.nz/products/a-z-benefits/jobseeker-support.html" target="_blank">
-            workandincome.govt.nz/products/a-z-benefits/jobseeker-support.html
-          </a>
-        </div>
-      </div>
-      <div class="cite-card">
-        <div class="cite-source">legislation.govt.nz</div>
-        <div class="cite-title">Social Security Act 2018 — eligibility framework</div>
-        <div class="cite-url">
-          <a href="https://www.legislation.govt.nz/act/public/2018/0032/latest/whole.html" target="_blank">
-            legislation.govt.nz/act/public/2018/0032/latest/whole.html
-          </a>
-        </div>
+        <div class="cite-source">Research</div>
+        <div class="cite-title">AI Governance & Explainable Automated Decisions</div>
+        <div class="cite-url">Demonstration Project</div>
       </div>
     </div>
   </div>
@@ -1232,66 +857,20 @@ Status: FINAL — no appeal<br>
 <footer>
   <div class="footer-inner">
     <div class="footer-top">
-
       <div>
         <div class="footer-brand">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></span>
-          Transparent AI Decisions
+          <span class="nav-dot"></span> Transparent AI Decisions
         </div>
-        <p class="footer-desc">
-          A research demonstration showing how AI language models can make
-          government decisions more transparent and challengeable than
-          conventional automated systems.
-        </p>
+        <div class="footer-desc">Demonstrating transparent, challengeable AI decision-making for public sector benefits.</div>
       </div>
-
-      <div class="footer-col">
-        <h4>On this page</h4>
-        <ul>
-          <li><a href="#about">The case for transparency</a></li>
-          <li><a href="#demo">Try the NZ benefit demo</a></li>
-          <li><a href="#how">How it works</a></li>
-          <li><a href="#cite">Sources and citations</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Work and Income NZ</h4>
-        <ul>
-          <li><a href="https://my.msd.govt.nz" target="_blank">Apply via MyMSD</a></li>
-          <li><a href="https://www.workandincome.govt.nz/products/a-z-benefits/jobseeker-support.html" target="_blank">Jobseeker Support info</a></li>
-          <li><a href="https://www.workandincome.govt.nz/about-work-and-income/feedback-and-complaints/review-of-decisions.html" target="_blank">Review of decisions</a></li>
-          <li><a href="https://www.workandincome.govt.nz/about-work-and-income/contact-us/phone-numbers.html" target="_blank">Contact: 0800 559 009</a></li>
-        </ul>
-      </div>
-
-      <div class="footer-col">
-        <h4>Related reading</h4>
-        <ul>
-          <li><a href="https://robodebt.royalcommission.gov.au" target="_blank">Robodebt Royal Commission</a></li>
-          <li><a href="https://www.postofficetrial.com" target="_blank">Post Office Horizon inquiry</a></li>
-          <li><a href="https://www.legislation.govt.nz/act/public/2018/0032/latest/whole.html" target="_blank">Social Security Act 2018</a></li>
-          <li><a href="https://aistudio.google.com" target="_blank">Google Gemini AI</a></li>
-        </ul>
-      </div>
-
     </div>
-
     <div class="footer-bottom">
-      <strong style="color:#8892A4">Research demonstration only.</strong>
-      This is not a real Work and Income NZ system and assessments are not legally binding.
-      For actual benefit applications, visit <a href="https://my.msd.govt.nz" target="_blank" style="color:#6892C4">my.msd.govt.nz</a>
-      or call Work and Income on <strong style="color:#8892A4">0800 559 009</strong>.
-      Payment rates sourced from workandincome.govt.nz (1 April 2026). Built using Google Gemini & Anthropic Claude. Most text on this website is AI generated. 
-      Contact baldginga(a)gmail.com for anything about this site.  
+      &copy; 2026 Research Demonstration. All rights reserved.
     </div>
   </div>
 </footer>
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.prod.min.js"></script>
-
-<script src="/app.js"></script>
-
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
