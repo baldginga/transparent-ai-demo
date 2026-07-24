@@ -205,12 +205,14 @@ const stageTimer = setInterval(() => {
       // ── Gemini-Native Property Capture ───────────────────────
       if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
       
-      const text = data.text;
-      const get = tag => {
-        const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`));
-        return m ? m[1].trim() : '';
-      };
+      // Clean markdown fences first
+      const cleanText = data.text.replace(/```xml|```/gi, '').trim();
 
+      const get = tag => {
+       const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i');
+       const match = cleanText.match(regex);
+       return match ? match[1].trim() : '';
+     };
       reasoning.value = get('reasoning');
       result.value = {
         decision: get('decision') || 'FURTHER_INFORMATION_NEEDED',
