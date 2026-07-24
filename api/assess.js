@@ -116,11 +116,34 @@ async function checkRateLimit(ip) {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify([
-        ['INCR', key],
-        ['EXPIRE', key, RATE_LIMIT_WINDOW_SEC, 'NX'], // only set TTL on the first request in the window
-      ]),
-    });
+ body: JSON.stringify({
+  contents: [
+    {
+      parts: [{ text: prompt }],
+    },
+  ],
+  generationConfig: {
+    maxOutputTokens: 2500,
+    temperature: 0.2,
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: "OBJECT",
+      properties: {
+        reasoning: { type: "STRING", description: "Step-by-step assessment reasoning" },
+        decision: { 
+          type: "STRING", 
+          enum: ["APPROVED", "DECLINED", "FURTHER_INFORMATION_NEEDED"] 
+        },
+        rate: { type: "STRING" },
+        adjusted_rate: { type: "STRING" },
+        summary: { type: "STRING" },
+        obligations: { type: "STRING" },
+        rights: { type: "STRING" }
+      },
+      required: ["reasoning", "decision", "summary", "rights"]
+    }
+  },
+}),
 
     if (!res.ok) {
       console.error('Rate limit check failed, Upstash responded', res.status);
