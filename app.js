@@ -145,7 +145,7 @@ ASSETS AND PROPERTY:
 ADDITIONAL INFORMATION:
 ${form.other || 'None provided'}
 
-Please assess Jobseeker Support eligibility with full transparent reasoning. Show all income calculations with actual numbers. Issue the decision in the required XML format.`.trim();
+Please assess Jobseeker Support eligibility with full transparent reasoning. Show all income calculations with actual numbers. Provide the structured evaluation accurately.`.trim();
     }
 
     function validate() {
@@ -183,22 +183,48 @@ const stageTimer = setInterval(() => {
     }, 500);
 
     try {
-      const res = await fetch(PROXY_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: [
-            { role: 'user', content: buildPrompt() }
-          ],
-        }),
-      });
+  const res = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    // FIX 1: Pass 'prompt' directly so api/assess.js can destructure it
+    body: JSON.stringify({ prompt: buildPrompt() }),
+  });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `API Error Status (${res.status})`);
-      }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `API Error Status (${res.status})`);
+  }
+
+  const data = await res.json();
+
+  if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
+
+  // FIX 2: Parse Gemini's structured JSON output directly
+  const cleanJsonText = data.text.replace(/```json|```/gi, '').trim();
+  const parsed = JSON.parse(cleanJsonText);
+
+  reasoning.value = parsed.reasoning || '';
+  result.value = {
+    decision: parsed.decision || 'FURTHER_INFORMATION_NEEDED',
+    rate: parsed.rate || 'N/A',
+    adjustedRate: parsed.adjusted_rate || parsed.rate || 'N/A',
+    summary: parsed.summary || '',
+    obligations: parsed.obligations || '',
+    rights: parsed.rights || '',
+    timestamp: new Date().toLocaleString('en-NZ', { dateStyle: 'long', timeStyle: 'short' }),
+    ref: 'WINZ-JS-' + Date.now().toString(36).toUpperCase().slice(-9),
+  };
+
+  step.value = 'result';
+} catch (e) {
+  error.value = 'Assessment engine error: ' + e.message + '. Please check your configuration and try again.';
+  step.value = 'form';
+} finally {
+  clearInterval(stageTimer);
+  clearInterval(dotTimer);
+}
 
       const data = await res.json();
 
