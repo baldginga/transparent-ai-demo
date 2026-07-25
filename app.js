@@ -145,7 +145,7 @@ ASSETS AND PROPERTY:
 ADDITIONAL INFORMATION:
 ${form.other || 'None provided'}
 
-Please assess Jobseeker Support eligibility with full transparent reasoning. Show all income calculations with actual numbers. Provide the structured evaluation accurately.`.trim();
+Please assess Jobseeker Support eligibility with full transparent reasoning. Show all income calculations with actual numbers. Issue the decision in the required XML format.`.trim();
     }
 
     function validate() {
@@ -183,62 +183,34 @@ const stageTimer = setInterval(() => {
     }, 500);
 
     try {
-  const res = await fetch(PROXY_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    // FIX 1: Pass 'prompt' directly so api/assess.js can destructure it
-    body: JSON.stringify({ prompt: buildPrompt() }),
-  });
+      const res = await fetch(PROXY_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'user', content: buildPrompt() }
+          ],
+        }),
+      });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || `API Error Status (${res.status})`);
-  }
-
-  const data = await res.json();
-
-  if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
-
-  // FIX 2: Parse Gemini's structured JSON output directly
-  const cleanJsonText = data.text.replace(/```json|```/gi, '').trim();
-  const parsed = JSON.parse(cleanJsonText);
-
-  reasoning.value = parsed.reasoning || '';
-  result.value = {
-    decision: parsed.decision || 'FURTHER_INFORMATION_NEEDED',
-    rate: parsed.rate || 'N/A',
-    adjustedRate: parsed.adjusted_rate || parsed.rate || 'N/A',
-    summary: parsed.summary || '',
-    obligations: parsed.obligations || '',
-    rights: parsed.rights || '',
-    timestamp: new Date().toLocaleString('en-NZ', { dateStyle: 'long', timeStyle: 'short' }),
-    ref: 'WINZ-JS-' + Date.now().toString(36).toUpperCase().slice(-9),
-  };
-
-  step.value = 'result';
-} catch (e) {
-  error.value = 'Assessment engine error: ' + e.message + '. Please check your configuration and try again.';
-  step.value = 'form';
-} finally {
-  clearInterval(stageTimer);
-  clearInterval(dotTimer);
-}
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `API Error Status (${res.status})`);
+      }
 
       const data = await res.json();
 
       // ── Gemini-Native Property Capture ───────────────────────
       if (!data?.text) throw new Error('No generated response text returned from the assessment engine');
       
-      // Clean markdown fences first
-      const cleanText = data.text.replace(/```xml|```/gi, '').trim();
-
+      const text = data.text;
       const get = tag => {
-       const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i');
-       const match = cleanText.match(regex);
-       return match ? match[1].trim() : '';
-     };
+        const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`));
+        return m ? m[1].trim() : '';
+      };
+
       reasoning.value = get('reasoning');
       result.value = {
         decision: get('decision') || 'FURTHER_INFORMATION_NEEDED',
