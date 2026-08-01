@@ -192,6 +192,20 @@ const stageTimer = setInterval(() => {
           messages: [
             { role: 'user', content: buildPrompt() }
           ],
+          // Structured fields only. Deliberately excludes healthDetails and
+          // `other` — the two free-text fields — so the backend's
+          // consistency check runs on data the applicant can't inject
+          // instructions into via those boxes.
+          applicantData: {
+            age: form.age,
+            residency: form.residency,
+            relationship: form.relationship,
+            dependents: form.dependents,
+            employment: form.employment,
+            studying: form.studying,
+            income: form.income,
+            partnerIncome: form.partnerIncome,
+          },
         }),
       });
 
