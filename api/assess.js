@@ -1,5 +1,5 @@
 /**
- * api/assess.js — Vercel serverless function using Google Gemini (free tier)
+ * api/assess.js — Vercel serverless function using Google Gemini (pre-pay tokens)
  *
  * CHANGES IN THIS PATCH:
  * 1. Restored `thinkingConfig: { thinkingBudget: 0 }` + raised maxOutputTokens
