@@ -1,5 +1,5 @@
 /**
- * api/assess.js — Vercel serverless function using Google Gemini (pre-pay tokens)
+ * api/assess.js — Vercel serverless function using Google Gemini (free tier)
  *
  * CHANGES IN THIS PATCH:
  * 1. Restored `thinkingConfig: { thinkingBudget: 0 }` + raised maxOutputTokens
@@ -20,6 +20,19 @@
  *    than silently handed to the frontend, which was previously falling
  *    back to a misleading "Further information needed"-looking state with
  *    no visible error when parsing came up empty.
+ * 3. NEW: server-side prompt-injection consistency check. SYSTEM_PROMPT
+ *    tells Gemini to ignore instructions embedded in applicant free text,
+ *    but that is a probabilistic, model-internal defense — if it ever
+ *    fails, nothing downstream previously caught it. The frontend now
+ *    sends a separate `applicantData` object containing ONLY the
+ *    structured, dropdown/number-entered fields (never the free-text
+ *    "Health condition detail" / "Additional information" fields
+ *    SYSTEM_PROMPT warns about). This handler independently re-derives a
+ *    small set of unambiguous hard-fail eligibility outcomes from that
+ *    data alone and overrides the decision to DECLINED if the model
+ *    returned APPROVED despite one — so no amount of injected text can
+ *    change the outcome. Requests without valid `applicantData` are now
+ *    rejected with 400 rather than silently skipping the check.
  */
 
 export const config = {
@@ -44,6 +57,152 @@ const REQUIRED_TAGS = ['reasoning', 'decision', 'rate', 'adjusted_rate', 'summar
 function findMissingTags(text) {
   if (!text) return REQUIRED_TAGS.slice();
   return REQUIRED_TAGS.filter((tag) => !text.includes(`<${tag}>`) || !text.includes(`</${tag}>`));
+}
+
+// ================================================================
+// PROMPT-INJECTION CONSISTENCY CHECK
+//
+// Threat model: SYSTEM_PROMPT tells Gemini to treat applicant free text as
+// descriptive-only, never as instructions. That defense lives entirely
+// inside the model — if a crafted "Health condition detail" or
+// "Additional information" string ever succeeds in shifting the decision,
+// there was previously nothing downstream to catch it before the response
+// reached the applicant.
+//
+// This does NOT ask Gemini to grade itself. It re-derives a small set of
+// UNAMBIGUOUS hard-fail outcomes directly from the structured, non-free-
+// text fields (age, residency, employment situation, study status) using
+// fixed logic mirroring SYSTEM_PROMPT's own numbered ELIGIBILITY CRITERIA,
+// then compares that against the model's <decision>. Free text plays no
+// part in this computation, so no injected instruction in those fields can
+// change the result.
+//
+// Deliberately narrow: this only encodes criteria that are unambiguous
+// from a single dropdown/number value (see comments on each rule below).
+// It is not a full reimplementation of benefit law, and isn't meant to be
+// — it exists to close the specific gap where free text could talk the
+// model into an APPROVED it structurally should not have reached. It only
+// ever overrides toward DECLINED, never the reverse: an unearned decline
+// isn't the injection risk here, an unearned approval is.
+// ================================================================
+
+const RESIDENCY_VALUES    = ['nz_citizen', 'permanent_resident', 'open_work_visa', 'student_visa', 'visitor_visa', 'none'];
+const RELATIONSHIP_VALUES = ['single', 'partnered_both', 'partnered_working', 'separated', 'widowed'];
+const EMPLOYMENT_VALUES   = ['unemployed_seeking', 'redundant', 'resigned', 'dismissed', 'part_time_seeking', 'health_reduced', 'health_unable', 'self_employed_low', 'employed_fulltime'];
+const STUDY_VALUES        = ['no', 'fulltime', 'parttime', 'approved_training'];
+
+// Validates applicantData against a fixed schema matching app.js's form
+// values exactly. Anything that doesn't parse is rejected outright rather
+// than silently ignored — so the consistency check below can never be
+// skipped by simply omitting or malforming this field.
+function validateApplicantData(raw) {
+  if (!raw || typeof raw !== 'object') {
+    return { valid: false, error: 'applicantData is missing or not an object.' };
+  }
+
+  const age = parseInt(raw.age, 10);
+  if (!Number.isFinite(age) || age < 0 || age > 120) {
+    return { valid: false, error: 'applicantData.age is invalid.' };
+  }
+  if (!RESIDENCY_VALUES.includes(raw.residency)) {
+    return { valid: false, error: 'applicantData.residency is invalid.' };
+  }
+  if (!RELATIONSHIP_VALUES.includes(raw.relationship)) {
+    return { valid: false, error: 'applicantData.relationship is invalid.' };
+  }
+  if (!EMPLOYMENT_VALUES.includes(raw.employment)) {
+    return { valid: false, error: 'applicantData.employment is invalid.' };
+  }
+  if (!STUDY_VALUES.includes(raw.studying)) {
+    return { valid: false, error: 'applicantData.studying is invalid.' };
+  }
+
+  const dependents = parseInt(raw.dependents, 10);
+  if (!Number.isFinite(dependents) || dependents < 0 || dependents > 20) {
+    return { valid: false, error: 'applicantData.dependents is invalid.' };
+  }
+
+  const income = Number(raw.income);
+  if (!Number.isFinite(income) || income < 0) {
+    return { valid: false, error: 'applicantData.income is invalid.' };
+  }
+
+  const partnerIncome = raw.partnerIncome === undefined || raw.partnerIncome === '' ? 0 : Number(raw.partnerIncome);
+  if (!Number.isFinite(partnerIncome) || partnerIncome < 0) {
+    return { valid: false, error: 'applicantData.partnerIncome is invalid.' };
+  }
+
+  return {
+    valid: true,
+    data: { age, residency: raw.residency, relationship: raw.relationship, dependents, employment: raw.employment, studying: raw.studying, income, partnerIncome },
+  };
+}
+
+// Mirrors SYSTEM_PROMPT's numbered ELIGIBILITY CRITERIA, but only the parts
+// unambiguous from a single structured field:
+//   1. AGE       — 18+, or 16-17 with dependants.
+//   2. RESIDENCY — 'none' / 'visitor_visa' have no NZ work rights or
+//                  residency under any reading of the criterion.
+//                  ('student_visa' is deliberately NOT hard-failed — work
+//                  rights vary by visa condition and SYSTEM_PROMPT isn't
+//                  specific enough to call it automatically; left to the
+//                  model's judgement.)
+//   3. EMPLOYMENT — fails only for the one dropdown value that means
+//                   30+ hrs/week full-time employment.
+//   5. STUDY      — fails only for full-time study (approved_training is
+//                   an explicit exception per the criterion).
+// Criteria 4 (work test) and 6 (income cut-out point) are deliberately
+// left out: SYSTEM_PROMPT gives no numeric cut-out threshold to check
+// against, and work-test availability isn't reducible to one dropdown
+// value without risking false positives on a real applicant.
+function computeHardFailReasons(d) {
+  const reasons = [];
+
+  if (d.age < 16) {
+    reasons.push(`Declared age (${d.age}) is below the minimum age for Jobseeker Support.`);
+  } else if (d.age < 18 && d.dependents === 0) {
+    reasons.push(`Declared age (${d.age}) is under 18 with no dependent children declared (the 16-17 exception requires dependants).`);
+  }
+
+  if (d.residency === 'none' || d.residency === 'visitor_visa') {
+    reasons.push(`Declared residency status ("${d.residency}") does not meet the NZ citizenship/residency/work-rights requirement.`);
+  }
+
+  if (d.employment === 'employed_fulltime') {
+    reasons.push('Declared employment situation is full-time employment (30+ hrs/week), which fails the employment situation criterion.');
+  }
+
+  if (d.studying === 'fulltime') {
+    reasons.push('Declared study status is full-time study, which fails the study criterion.');
+  }
+
+  return reasons;
+}
+
+// Independent recomputation of OFFICIAL RATES + INCOME ABATEMENT RULES
+// from SYSTEM_PROMPT, applied to structured income fields only. Advisory —
+// logged on mismatch, not used to override the decision — since rate
+// presentation involves more legitimate model-side judgement (rounding,
+// partial-week wording) than the hard-fail criteria above.
+function computeExpectedAdjustedRate(d) {
+  let base;
+  if (d.dependents > 0) base = 430;
+  else if (d.relationship === 'partnered_both') base = 313;
+  else if (d.age < 25) base = 348;
+  else base = 372.55;
+
+  const isCoupleBothEligible = d.relationship === 'partnered_both';
+  const incomeForAbatement = isCoupleBothEligible ? d.income + d.partnerIncome : d.income;
+  const abatementRate = isCoupleBothEligible ? 0.35 : 0.70;
+  const excess = Math.max(0, incomeForAbatement - 160);
+  const reduction = excess * abatementRate;
+
+  return Math.max(0, Math.round((base - reduction) * 100) / 100);
+}
+
+function extractTag(text, tag) {
+  const m = text.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`));
+  return m ? m[1].trim() : '';
 }
 
 const SYSTEM_PROMPT = `You are an AI decision-maker assessing NZ Jobseeker Support eligibility.
@@ -235,6 +394,18 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'Invalid or over-length content payload.' }), { status: 400, headers: corsHeaders });
   }
 
+  // Required, and validated before anything else — this is the structured
+  // ground truth the consistency check below relies on, so a request that
+  // doesn't carry valid applicantData never gets a free pass.
+  const applicantValidation = validateApplicantData(body?.applicantData);
+  if (!applicantValidation.valid) {
+    return new Response(
+      JSON.stringify({ error: `Invalid application data: ${applicantValidation.error}` }),
+      { status: 400, headers: corsHeaders }
+    );
+  }
+  const applicantData = applicantValidation.data;
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error('Assess handler misconfigured: GEMINI_API_KEY is not set in the environment.');
@@ -292,7 +463,46 @@ export default async function handler(req) {
 
     const text = geminiData.candidates[0].content.parts[0].text;
 
-    return new Response(JSON.stringify({ text }), { status: 200, headers: corsHeaders });
+    // ---- Consistency check against structured applicant data ----
+    const hardFailReasons = computeHardFailReasons(applicantData);
+    const modelDecision = extractTag(text, 'decision');
+
+    let finalText = text;
+    let integrityCheck = { overridden: false, reasons: [] };
+
+    if (hardFailReasons.length > 0 && modelDecision === 'APPROVED') {
+      console.error('[INTEGRITY OVERRIDE] Gemini returned APPROVED despite hard-fail structured criteria — overriding to DECLINED.', {
+        clientIp,
+        hardFailReasons,
+        applicantData,
+        originalDecision: modelDecision,
+      });
+
+      const overrideReasoning = `SERVER-SIDE INTEGRITY CHECK:\n\nThis application was automatically declined because the structured details you entered fail one or more eligibility criteria, regardless of any other content submitted:\n${hardFailReasons.map((r) => `- ${r}`).join('\n')}\n\nThis check exists specifically so that free-text fields on this form can never change the eligibility outcome — only the structured fields above (age, residency, employment situation, study status) determine it.`;
+
+      finalText = text
+        .replace(/<reasoning>[\s\S]*?<\/reasoning>/, `<reasoning>${overrideReasoning}</reasoning>`)
+        .replace(/<decision>[\s\S]*?<\/decision>/, '<decision>DECLINED</decision>')
+        .replace(/<rate>[\s\S]*?<\/rate>/, '<rate>N/A</rate>')
+        .replace(/<adjusted_rate>[\s\S]*?<\/adjusted_rate>/, '<adjusted_rate>N/A</adjusted_rate>')
+        .replace(/<summary>[\s\S]*?<\/summary>/, '<summary>Your application was declined by an automated integrity check because the details you entered do not meet the eligibility criteria. See the reasoning above for specifics, and use the review process below if you believe this is incorrect.</summary>')
+        .replace(/<obligations>[\s\S]*?<\/obligations>/, '<obligations>N/A</obligations>');
+
+      integrityCheck = { overridden: true, reasons: hardFailReasons };
+    } else {
+      const expectedAdjustedRate = computeExpectedAdjustedRate(applicantData);
+      const modelAdjustedRateNum = parseFloat((extractTag(text, 'adjusted_rate').match(/[\d.]+/) || [])[0]);
+      if (Number.isFinite(modelAdjustedRateNum) && Math.abs(modelAdjustedRateNum - expectedAdjustedRate) > 5) {
+        console.warn('[INTEGRITY ADVISORY] Model adjusted_rate diverges from server-side calculation — not overridden, logged for review.', {
+          clientIp,
+          modelAdjustedRateNum,
+          expectedAdjustedRate,
+          applicantData,
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({ text: finalText, integrityCheck }), { status: 200, headers: corsHeaders });
 
   } catch (err) {
     console.error('Assess handler failed:', err);
